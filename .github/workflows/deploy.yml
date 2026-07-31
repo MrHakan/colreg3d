@@ -41,6 +41,19 @@ jobs:
         # misclassified encounter, or a precache entry that no longer exists.
         run: node .github/scripts/verify.mjs
 
+      - name: Enable GitHub Pages
+        # This deliberately lives in `verify`, not in `deploy`. A job that
+        # declares `environment: github-pages` has its environment gate
+        # evaluated BEFORE any of its steps run, so if Pages has never been
+        # switched on, `deploy` is rejected instantly with no logs and an
+        # enablement step inside it would never get the chance to execute.
+        # Running it here — in a job with no environment — means Pages (and
+        # with it the github-pages environment) exists by the time `deploy`
+        # starts. After the first successful run this is a no-op.
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
   deploy:
     name: Deploy
     needs: verify
@@ -50,13 +63,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-        with:
-          # Turns Pages on with "GitHub Actions" as the source on the first
-          # run, so the repository needs no manual setup in Settings.
-          enablement: true
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3

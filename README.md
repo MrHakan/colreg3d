@@ -15,7 +15,11 @@ tablet, on the bridge, at night.
 
 ---
 
-## Running it
+**Live: https://mrhakan.github.io/colreg3d/**
+
+---
+
+## Running it locally
 
 There is no build step. Any static file server works — ES modules and service
 workers both require `http://`, so opening `index.html` from the filesystem will
@@ -26,10 +30,31 @@ python3 -m http.server 8080
 # then open http://localhost:8080/
 ```
 
-Deploying to GitHub Pages: push the repository and enable Pages on the branch
-root. Every path in the app is relative (`./…`), so it works unchanged from a
-project page such as `https://<user>.github.io/colreg3d/`. The `.nojekyll` file
-stops Pages from filtering directories.
+## Deployment
+
+`main` is the only branch. Every push to it runs
+`.github/workflows/deploy.yml`, which publishes the repository root to GitHub
+Pages — no build step, the site *is* the repo.
+
+The deploy is **gated** on `.github/scripts/verify.mjs`, which runs 35 checks
+and blocks publication if any fail:
+
+- the rule database passes the same referential validation the app runs at boot,
+  and still covers Rules 23–31
+- the real Rule 21 arc self-test, imported from `lights.js` rather than
+  reimplemented, including the 360° tiling sweep
+- encounter classification at the Rule 13/14/15 boundaries, including the 14(c)
+  doubt clause and the 22.5°-abaft-the-beam cutover
+- every file `sw.js` precaches exists — a missing one makes `addAll()` reject,
+  which silently breaks offline for every user
+- `index.html` and `sw.js` pin the same Three.js version
+- manifest paths stay relative and every icon is on disk
+
+Run it yourself with `node .github/scripts/verify.mjs`.
+
+Every path in the app is relative (`./…`), so it works unchanged from a project
+page such as `https://<user>.github.io/colreg3d/`. `.nojekyll` is kept so the
+site also behaves if you ever switch back to branch-based publishing.
 
 ---
 
