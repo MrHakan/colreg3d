@@ -36,7 +36,7 @@ python3 -m http.server 8080
 `.github/workflows/deploy.yml`, which publishes the repository root to GitHub
 Pages — no build step, the site *is* the repo.
 
-The deploy is **gated** on `.github/scripts/verify.mjs`, which runs 35 checks
+The deploy is **gated** on `.github/scripts/verify.mjs`, which runs 41 checks
 and blocks publication if any fail:
 
 - the rule database passes the same referential validation the app runs at boot,
@@ -47,7 +47,10 @@ and blocks publication if any fail:
   doubt clause and the 22.5°-abaft-the-beam cutover
 - every file `sw.js` precaches exists — a missing one makes `addAll()` reject,
   which silently breaks offline for every user
-- `index.html` and `sw.js` pin the same Three.js version
+- the vendored Three.js is intact: `VERSION` agrees with `sw.js`, every file is
+  present, and the entry point's sibling core file exists
+- **no absolute third-party URL** appears anywhere in the app source, so the
+  no-CDN guarantee cannot silently regress
 - manifest paths stay relative and every icon is on disk
 
 Run it yourself with `node .github/scripts/verify.mjs`.
@@ -74,6 +77,10 @@ js/
   simulator.js             Rules 13–15 encounter classification
 data/colreg-rules.json     33 configurations, Rules 23–31, each cited
 assets/icons/              SVG + 192/512 PNG + maskable PNG
+vendor/three/              Three.js r185, committed — no CDN, no network
+.github/
+  workflows/deploy.yml     Pages deploy, gated on the checks below
+  scripts/verify.mjs       pre-deploy verification (excluded from the site)
 ```
 
 Modules never import each other's state. They communicate over `bus`, a plain
@@ -131,35 +138,63 @@ reports the more demanding interpretation, never the more convenient one.
 
 ---
 
-## Three.js
+## Three.js — vendored, no CDN
 
-Pinned to **r185 (`three@0.185.1`)**, loaded as ESM from jsDelivr through the
-import map in `index.html`.
+Pinned to **r185 (`three@0.185.1`)** and **committed into this repository** at
+`vendor/three/`. The app makes **no third-party request at any point**, first
+load included.
 
-Since r150 the module build is split, so `three.module.js` re-exports from
-`three.core.js`. **Both** must be cached for offline use — caching only the entry
-point produces a module that 404s the moment you go offline. `sw.js` precaches
-both plus `OrbitControls.js`, in a cache keyed by the Three.js version so an app
-update does not re-download ~1.2 MB over a metered satellite link.
+That is the whole point: these machines sit behind restrictive firewalls or on
+metered satellite links, so a CDN dependency means the very first load can fail
+in exactly the environment the app exists to serve. Clone the repo, serve it,
+and it works with the network unplugged from the first byte.
 
-Three.js is imported **dynamically**, so a blocked or cold CDN degrades to "3D
-unavailable" instead of taking the whole app down — the catalogue, rule text and
-quiz do not need WebGL.
+| File | Purpose |
+| --- | --- |
+| `vendor/three/three.module.min.js` | ESM entry point |
+| `vendor/three/three.core.min.js` | Re-exported by the entry point — the module build has been split since r150, and one without the other 404s |
+| `vendor/three/addons/controls/OrbitControls.js` | Imports the bare specifier `three`, resolved by the import map |
+| `vendor/three/LICENSE` | Three.js is MIT; the licence ships with the copy |
+| `vendor/three/VERSION` | Checked against `THREE_VERSION` in `sw.js` by CI |
 
----
+The **minified** build is used: 414 KB → 188 KB gzipped versus the readable
+build. On a metered link that difference is worth more than readable stack
+traces in a dependency we do not modify.
+
+### Updating Three.js
+
+```bash
+npm pack three@<version>            # or download the tarball
+tar xzf three-<version>.tgz
+cp package/build/three.module.min.js package/build/three.core.min.js vendor/three/
+cp package/examples/jsm/controls/OrbitControls.js vendor/three/addons/controls/
+cp package/LICENSE vendor/three/
+echo "<version>" > vendor/three/VERSION
+# then bump THREE_VERSION in sw.js so the vendor cache re-fills
+node .github/scripts/verify.mjs
+```
+
+CI fails if `VERSION` and `sw.js` disagree, if a vendored file is missing, if
+the entry point's sibling core file is absent, or if any absolute third-party
+URL reappears in the app source.
+
+Three.js is still imported **dynamically**, so if the vendored files were ever
+lost the app degrades to "3D unavailable" with the catalogue, rule text and
+quiz still usable, rather than failing to boot at all.
 
 ## Caching strategy (`sw.js`)
 
 | Request | Strategy | Why |
 | --- | --- | --- |
 | Navigation | Network-first, 3.5 s timeout → cached `index.html` | A captive portal or dead sat link must never stop the app opening |
-| Same-origin shell | Stale-while-revalidate | Instant paint, silent background refresh |
-| Three.js (CDN) | Cache-first, version-keyed cache | URLs are immutable; never re-fetch |
-| Anything else | Straight to network | Nothing else is cached |
+| App shell | Stale-while-revalidate | Instant paint, silent background refresh |
+| `vendor/three/*` | Cache-first, cache keyed by `THREE_VERSION` | Immutable for a version, and kept out of the app-shell cache so bumping `APP_VERSION` does not re-download ~190 KB |
+| Anything else | Straight to network | Nothing else is cached — and the app requests nothing else |
 
-Install **fails loudly** if any app-shell file is missing — a half-cached shell is
-worse than none. Vendor assets are best-effort at install (the CDN may be
-firewalled) and are picked up by the runtime handler on a later load.
+Install **fails loudly** if any precached file is missing, shell or vendor alike
+— a half-cached install is worse than none. Now that Three.js ships with the
+app there is no best-effort path left: every precache entry is a local file, so
+a failure is a build error rather than a network condition.
 
 When a new worker is waiting, the page raises a toast with a *Reload* action
 rather than swapping code underneath a learner mid-quiz.
@@ -176,8 +211,11 @@ rather than swapping code underneath a learner mid-quiz.
 5. Install to the home screen (Chrome: *Install app*) and launch it with no
    connection.
 
-Verified in Chromium: offline reload returns HTTP 200 from cache, renders 34,398
-triangles, and logs zero console errors.
+Verified in Chromium with **every cross-origin request aborted at the browser**,
+not merely offline: the app attempted **zero** external requests, loaded Three.js
+from `/vendor/three/`, rendered 34,398 triangles in 21 draw calls, and survived a
+fully offline reload (HTTP 200 from cache, 33 configurations, zero console
+errors).
 
 ---
 

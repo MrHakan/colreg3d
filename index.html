@@ -17,25 +17,38 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <!-- All paths are relative (./) so the app works from a GitHub Pages
-       project page such as https://username.github.io/colreg3d/ -->
+       project page such as username.github.io/colreg3d/ (deliberately written
+       without a scheme: the CI guard fails on any absolute third-party URL in
+       these files, and that check is more valuable kept strict than
+       comment-aware). -->
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
   <link rel="stylesheet" href="./styles.css">
 
   <!--
-    Three.js r185 (npm "three@0.185.1"), ESM build via jsDelivr.
-    NOTE: since r150+ the module build is split — three.module.js imports
-    from ./three.core.js — so BOTH files are precached by sw.js. The
-    "three/addons/" mapping mirrors the package's examples/jsm/ folder,
-    which is where OrbitControls lives (it imports the bare specifier
-    "three", hence this import map is required).
+    Three.js r185 (three@0.185.1), VENDORED into this repository at
+    vendor/three/ — no CDN, no third-party request, ever.
+
+    Why vendored: this app is used on shipboard laptops that may be behind a
+    restrictive firewall or on a metered satellite link. A CDN dependency
+    means the very first load can fail in exactly the environment the app
+    exists to serve. Vendoring makes the repository self-contained: clone it,
+    serve it, and it works with the network unplugged from the first byte.
+
+    The minified build is used: 414 KB -> 188 KB gzipped versus the readable
+    build, which matters on a metered link. Note that three.module.min.js
+    imports "./three.core.min.js", so BOTH files must sit alongside each
+    other — the module build has been split since r150.
+
+    OrbitControls imports the bare specifier "three", which is what this
+    import map resolves.
   -->
   <script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+      "three": "./vendor/three/three.module.min.js",
+      "three/addons/": "./vendor/three/addons/"
     }
   }
   </script>

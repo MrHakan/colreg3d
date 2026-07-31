@@ -158,13 +158,65 @@ if (shellMatch) {
   });
 }
 
-check('index.html import map pins the same Three.js version as sw.js', () => {
-  const html = read('index.html');
-  const swVersion = sw.match(/const THREE_VERSION = '([^']+)'/)?.[1];
-  const htmlVersions = [...html.matchAll(/three@([\d.]+)/g)].map((m) => m[1]);
-  if (!swVersion) return 'no THREE_VERSION in sw.js';
-  const mismatched = htmlVersions.filter((v) => v !== swVersion);
-  return mismatched.length === 0 || `sw.js=${swVersion} html=${mismatched.join(',')}`;
+/* ── Vendored Three.js ─────────────────────────────────────────────────── */
+console.log('\nVendored Three.js');
+
+const html = read('index.html');
+const swThreeVersion = sw.match(/const THREE_VERSION = '([^']+)'/)?.[1];
+
+check('sw.js declares THREE_VERSION', () => Boolean(swThreeVersion));
+
+check('vendor/three/VERSION matches sw.js', () => {
+  const vendored = read('vendor/three/VERSION').trim();
+  return vendored === swThreeVersion || `vendor=${vendored} sw.js=${swThreeVersion}`;
+});
+
+check('every vendored Three.js file exists', () => {
+  const files = [...sw.matchAll(/'(\.\/vendor\/three\/[^']+)'/g)].map((m) => m[1]);
+  if (!files.length) return 'sw.js precaches no vendor files';
+  const missing = files.filter((f) => !existsSync(resolve(ROOT, f)));
+  return missing.length === 0 || missing.join(', ');
+});
+
+check('three.module.min.js and three.core.min.js are siblings', () => {
+  // The module build has been split since r150; the entry point re-exports
+  // from the core file by relative path, so one without the other 404s.
+  const entry = read('vendor/three/three.module.min.js');
+  const ref = entry.match(/from"(\.\/[^"]*three\.core[^"]*)"/)?.[1];
+  if (!ref) return 'entry does not import a core file — layout changed?';
+  return existsSync(resolve(ROOT, 'vendor/three', ref)) || `missing ${ref}`;
+});
+
+check('import map resolves "three" to the vendored file', () => {
+  const map = html.match(/"three":\s*"([^"]+)"/)?.[1];
+  if (!map) return 'no "three" entry in the import map';
+  return (map.startsWith('./vendor/three/') && existsSync(resolve(ROOT, map))) ||
+         `points at ${map}`;
+});
+
+check('the MIT licence ships with the vendored copy', () =>
+  existsSync(resolve(ROOT, 'vendor/three/LICENSE')));
+
+check('no third-party host is referenced anywhere in the app', () => {
+  // Guards the whole point of vendoring: one careless CDN URL reintroduces a
+  // first-load network dependency on a ship that may have no connectivity.
+  // Deliberately not comment-aware — a spurious failure that makes a human
+  // look is far cheaper than a missed third-party fetch, so absolute URLs are
+  // banned from these files outright, comments included.
+  const sources = ['index.html', 'sw.js', 'manifest.json',
+                   'js/main.js', 'js/scene.js', 'js/lights.js',
+                   'js/colreg-data.js', 'js/quiz.js', 'js/simulator.js'];
+  const offenders = [];
+  for (const f of sources) {
+    const text = read(f);
+    for (const m of text.matchAll(/https?:\/\/([\w.-]+)/g)) {
+      const host = m[1];
+      // Spec/namespace URLs are identifiers, not fetches.
+      if (host === 'www.w3.org' || host === 'schema.org') continue;
+      offenders.push(`${f} → ${host}`);
+    }
+  }
+  return offenders.length === 0 || offenders.join('; ');
 });
 
 /* ── 5. PWA manifest ───────────────────────────────────────────────────── */

@@ -13,9 +13,9 @@
      • Navigations
          network-first with a short timeout → fall back to cached index.html
          (so a flaky sat link never blocks the bridge from opening the app)
-     • Vendor / CDN (Three.js, version-pinned & immutable)
-         cache-first, stored in a cache keyed by the Three.js version so an
-         app update does not force a 1.2 MB re-download over a metered link
+     • Vendored Three.js (same-origin, immutable for a given version)
+         cache-first, in a cache keyed by the Three.js version, so bumping
+         APP_VERSION does not re-download ~190 KB over a metered link
      • Everything else → straight to network, no caching
 
    Scope note: this file lives at the repository root, so its scope is the
@@ -50,15 +50,18 @@ const APP_SHELL = [
   './assets/icons/icon-maskable-512.png'
 ];
 
-/* Third-party ESM. three.module.js re-exports from three.core.js, so BOTH
-   are required — caching only the former yields a module that 404s offline. */
+/* Three.js, vendored into the repository — same-origin, no CDN. Kept in its
+   own cache keyed by THREE_VERSION so an app release does not evict it.
+   three.module.min.js re-exports from three.core.min.js, so BOTH are
+   required: caching only the former yields a module that 404s offline. */
 const VENDOR_ASSETS = [
-  `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/build/three.module.js`,
-  `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/build/three.core.js`,
-  `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/examples/jsm/controls/OrbitControls.js`
+  './vendor/three/three.module.min.js',
+  './vendor/three/three.core.min.js',
+  './vendor/three/addons/controls/OrbitControls.js'
 ];
 
-const VENDOR_HOSTS = ['cdn.jsdelivr.net'];
+/** Requests under this path are served from VENDOR_CACHE. */
+const VENDOR_PATH = '/vendor/three/';
 const NAV_TIMEOUT_MS = 3500;
 
 /* ── Install ───────────────────────────────────────────────────────────── */
@@ -69,21 +72,13 @@ self.addEventListener('install', (event) => {
     // Must succeed: a missing shell file is a build error we want to surface.
     await shell.addAll(APP_SHELL);
 
-    // Best-effort: the CDN may be unreachable behind a ship firewall. The app
-    // still installs; vendor files are picked up by the runtime handler later.
+    /* Now that Three.js ships with the app, this is no longer best-effort:
+       these are local files, so a failure is a build error and install should
+       fail loudly rather than leave a shell that cannot render. */
     const vendor = await caches.open(VENDOR_CACHE);
-    const results = await Promise.allSettled(
-      VENDOR_ASSETS.map(async (url) => {
-        if (await vendor.match(url)) return; // already cached from a prior version
-        const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
-        if (!res.ok) throw new Error(`${res.status} ${url}`);
-        await vendor.put(url, res);
-      })
-    );
-
-    const failed = results.filter((r) => r.status === 'rejected').length;
-    if (failed) {
-      console.warn(`[sw] ${failed}/${VENDOR_ASSETS.length} vendor asset(s) not precached; will retry at runtime`);
+    const already = await vendor.keys();
+    if (already.length < VENDOR_ASSETS.length) {
+      await vendor.addAll(VENDOR_ASSETS);
     }
   })());
 
@@ -125,15 +120,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (VENDOR_HOSTS.includes(url.hostname)) {
-    event.respondWith(cacheFirst(request, VENDOR_CACHE));
-    return;
-  }
-
   if (url.origin === self.location.origin) {
-    event.respondWith(staleWhileRevalidate(request, SHELL_CACHE));
+    // Version-pinned Three.js: immutable, so cache always wins.
+    if (url.pathname.includes(VENDOR_PATH)) {
+      event.respondWith(cacheFirst(request, VENDOR_CACHE));
+    } else {
+      event.respondWith(staleWhileRevalidate(request, SHELL_CACHE));
+    }
   }
-  // Anything else: default network handling.
+  // Cross-origin: default network handling. The app makes no such requests.
 });
 
 /* ── Strategies ────────────────────────────────────────────────────────── */
