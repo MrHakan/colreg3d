@@ -61,7 +61,7 @@ const CAMERA = {
 const PALETTE = {
   night: {
     zenith: 0x030711, horizon: 0x0a1c2e, deep: 0x020509,
-    fog: 0x060d18, sun: 0xaec6e8, sunIntensity: 0.22, ambient: 0.10, stars: 1
+    fog: 0x060d18, sun: 0xaec6e8, sunIntensity: 0.22, ambient: 0.17, stars: 1
   },
   day: {
     zenith: 0x2f7fc4, horizon: 0xa9cbe4, deep: 0x0d3550,

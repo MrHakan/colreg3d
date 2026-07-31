@@ -551,6 +551,10 @@ async function start() {
     toast(`Not yet wired up: ${pending.join(', ')}.`, { kind: 'info', timeout: 6000 });
   }
 
+  /* Live handles for the arc-verification workflow described in lights.js:
+     __COLREG__.scene.lookFromBearing(113) then read the debug overlay. */
+  Object.assign(window.__COLREG__, { scene, lights, data, quiz, simulator });
+
   emit('app:ready', { version: APP_VERSION });
 }
 
