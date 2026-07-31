@@ -1,12 +1,27 @@
 /* ==========================================================================
-   COLREG 3D — Application shell controller  (STEP 1)
+   COLREG 3D — Application shell controller
    --------------------------------------------------------------------------
    Owns everything that is *not* 3D: mode switching, keyboard access, the
-   PWA lifecycle, persisted UI preferences and the status bar.
+   Learn-mode catalogue, the PWA lifecycle, persisted UI preferences and the
+   status bar. It also performs the boot sequence, handing each module the
+   handles it needs.
 
-   Later steps plug in through `bus` (a plain EventTarget) and through the
-   small `ui` façade exported at the bottom, so none of them need to edit
-   this file's wiring.
+   Modules never import each other's state; they communicate over `bus`, a
+   plain EventTarget. Events in use:
+
+     mode:change      {mode}            a tab was selected
+     scene:daylight   {daylight}        day/night toggled
+     scene:perf       {perf}            Full FX / Lite FX toggled
+     scene:arcs       {enabled}         arc wedges toggled
+     scene:shapes     {enabled}         Rule 31 day shapes toggled
+     scene:debug      {enabled}         arc-verification overlay toggled
+     camera:reset     -                 reset the view
+     ui:set-arcs      {enabled}         a module asks the shell to flip the
+                                        Arcs toggle, keeping the button in sync
+     catalogue:select {entry}           a configuration was chosen
+     quiz:answered    {correct, rule}   a quiz question was marked
+     sim:classified   {verdict}         the encounter was re-classified
+     app:ready        {version}
    ========================================================================== */
 
 import { initScene }         from './scene.js';     // STEP 2
@@ -15,7 +30,7 @@ import { loadColregData } from './colreg-data.js';  // STEP 4
 import { initQuiz }       from './quiz.js';         // STEP 5
 import { initSimulator }  from './simulator.js';    // STEP 6
 
-const APP_VERSION = '0.1.0';
+const APP_VERSION = '1.0.0';
 const STORE_KEY = 'colreg3d:prefs';
 
 /** App-wide event bus. Modules listen instead of importing each other. */
@@ -243,6 +258,11 @@ const setDebug  = wireToggle('#btn-debug',  'debug',  'scene:debug', (on) => {
 });
 
 $('#btn-reset-camera')?.addEventListener('click', () => emit('camera:reset'));
+
+/* The simulator's "Sidelight sectors" checkbox drives the same arc wedges as
+   the viewport toolbar. Routing it through the shell keeps the toolbar
+   button's pressed state honest instead of letting the two drift apart. */
+bus.addEventListener('ui:set-arcs', (e) => setArcs(Boolean(e.detail?.enabled)));
 
 /* ── Help dialog ───────────────────────────────────────────────────────── */
 
@@ -632,6 +652,9 @@ function reportCacheStatus() {
 /* ── Boot sequence ─────────────────────────────────────────────────────── */
 
 async function start() {
+  const versionEl = $('#stat-version');
+  if (versionEl) versionEl.textContent = `v${APP_VERSION}`;
+
   boot.progress(10, 'Restoring preferences…');
 
   setMode(prefs.mode);
@@ -678,7 +701,13 @@ async function start() {
   boot.progress(78, 'Loading COLREG database…');
   const data = await loadColregData();
 
-  initCatalogue(data, lights);
+  const catalogueApi = initCatalogue(data, lights);
+
+  bus.addEventListener('mode:change', (e) => {
+    if (e.detail.mode === 'learn' && catalogueApi?.selectedId) {
+      catalogueApi.select(catalogueApi.selectedId);
+    }
+  });
 
   if (data?.problems?.length) {
     toast(`Rule data: ${data.problems.length} validation problem(s) — see console.`,

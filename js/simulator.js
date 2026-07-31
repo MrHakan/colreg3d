@@ -518,9 +518,10 @@ export async function initSimulator(ctx) {
     ownVector.visible = targetVector.visible = adviceVector.visible = on;
   });
   el.showSectors?.addEventListener('change', () => {
-    // Reuses the Learn-mode arc wedges on own vessel.
-    bus?.dispatchEvent(new CustomEvent('scene:arcs', {
-      detail: { enabled: el.showSectors.checked, arcs: el.showSectors.checked }
+    // Reuses the Learn-mode arc wedges on own vessel. Routed through the
+    // shell so the viewport toolbar's Arcs button stays in sync.
+    bus?.dispatchEvent(new CustomEvent('ui:set-arcs', {
+      detail: { enabled: el.showSectors.checked }
     }));
   });
 

@@ -24,7 +24,7 @@
    username.github.io/colreg3d/ and a local static server.
    ========================================================================== */
 
-const APP_VERSION   = '0.1.0';
+const APP_VERSION   = '1.0.0';
 const THREE_VERSION = '0.185.1';
 
 const SHELL_CACHE  = `colreg3d-shell-v${APP_VERSION}`;
