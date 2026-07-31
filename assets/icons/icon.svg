@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="COLREG 3D">
+  <title>COLREG 3D</title>
+  <rect width="512" height="512" rx="92" fill="#0b1826"/>
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#3a5a74" stroke-width="3" opacity=".55"/>
+  <circle cx="256" cy="256" r="172" fill="none" stroke="#3a5a74" stroke-width="2" opacity=".35"/>
+  <path d="M256.00 84.00A172 172 0 0 1 414.91 321.82L359.47 298.86A112 112 0 0 0 256.00 144.00Z" fill="#00e07a"/>
+  <path d="M97.09 321.82A172 172 0 0 1 256.00 84.00L256.00 144.00A112 112 0 0 0 152.53 298.86Z" fill="#ff2f45"/>
+  <path d="M455.56 338.66A216 216 0 0 1 56.44 338.66L74.92 331.01A196 196 0 0 0 437.08 331.01Z" fill="#f4f8ff" opacity=".92"/>
+  <circle cx="256" cy="256" r="30" fill="#f4f8ff"/>
+  <circle cx="256" cy="256" r="30" fill="none" stroke="#0b1826" stroke-width="6"/>
+</svg>

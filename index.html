@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="learn" data-daylight="night" data-perf="full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>COLREG 3D — Navigational Lights &amp; Shapes Trainer</title>
+  <meta name="description" content="Offline 3D trainer for COLREG Rules 13-31: navigational light arcs, day shapes, aspect identification and multi-vessel encounter classification.">
+  <meta name="author" content="COLREG 3D">
+
+  <!-- Theme / PWA -->
+  <meta name="theme-color" content="#05080f">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="COLREG 3D">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- All paths are relative (./) so the app works from a GitHub Pages
+       project page such as https://username.github.io/colreg3d/ -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+
+  <!--
+    Three.js r185 (npm "three@0.185.1"), ESM build via jsDelivr.
+    NOTE: since r150+ the module build is split — three.module.js imports
+    from ./three.core.js — so BOTH files are precached by sw.js. The
+    "three/addons/" mapping mirrors the package's examples/jsm/ folder,
+    which is where OrbitControls lives (it imports the bare specifier
+    "three", hence this import map is required).
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+
+<body>
+  <a class="skip-link" href="#panel-region">Skip to controls</a>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       BOOT / LOADING OVERLAY
+       ══════════════════════════════════════════════════════════ -->
+  <div class="boot" id="boot" role="status" aria-live="polite">
+    <div class="boot__inner">
+      <svg class="boot__mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        <circle class="boot__ring" cx="50" cy="50" r="38" />
+        <path class="boot__sector boot__sector--stbd" d="M50 50 L50 8 A42 42 0 0 1 88.8 34.1 Z" />
+        <path class="boot__sector boot__sector--port" d="M50 50 L11.2 34.1 A42 42 0 0 1 50 8 Z" />
+        <circle class="boot__hub" cx="50" cy="50" r="5" />
+      </svg>
+      <p class="boot__title">COLREG&nbsp;3D</p>
+      <p class="boot__sub" id="boot-status">Initialising bridge simulation&hellip;</p>
+      <div class="boot__bar" role="presentation"><i id="boot-bar-fill"></i></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       APP SHELL
+       ══════════════════════════════════════════════════════════ -->
+  <div class="app" id="app">
+
+    <!-- ─────────── HEADER ─────────── -->
+    <header class="topbar" role="banner">
+      <div class="topbar__brand">
+        <svg class="brand__mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+          <circle cx="50" cy="50" r="44" class="brand__ring" />
+          <path d="M50 50 L50 6 A44 44 0 0 1 90.7 33.2 Z" class="brand__stbd" />
+          <path d="M50 50 L9.3 33.2 A44 44 0 0 1 50 6 Z" class="brand__port" />
+          <circle cx="50" cy="50" r="6" class="brand__hub" />
+        </svg>
+        <span class="brand__text">
+          <strong>COLREG&nbsp;3D</strong>
+          <small>Lights &amp; Shapes Trainer</small>
+        </span>
+      </div>
+
+      <nav class="modes" aria-label="Application mode">
+        <div class="modes__list" role="tablist" aria-label="Application mode">
+          <button class="mode" role="tab" id="tab-learn"
+                  aria-selected="true" aria-controls="panel-region"
+                  data-mode-target="learn" tabindex="0">
+            <span class="mode__idx">01</span>
+            <span class="mode__name">Learn</span>
+          </button>
+          <button class="mode" role="tab" id="tab-quiz"
+                  aria-selected="false" aria-controls="panel-region"
+                  data-mode-target="quiz" tabindex="-1">
+            <span class="mode__idx">02</span>
+            <span class="mode__name">Quiz</span>
+          </button>
+          <button class="mode" role="tab" id="tab-simulator"
+                  aria-selected="false" aria-controls="panel-region"
+                  data-mode-target="simulator" tabindex="-1">
+            <span class="mode__idx">03</span>
+            <span class="mode__name">Encounters</span>
+          </button>
+        </div>
+      </nav>
+
+      <div class="topbar__tools">
+        <button class="tool" id="btn-daylight" type="button"
+                aria-pressed="false"
+                aria-label="Toggle day or night scene lighting"
+                title="Day / night (D)">
+          <span class="tool__glyph" aria-hidden="true">◐</span>
+          <span class="tool__label" id="daylight-label">Night</span>
+        </button>
+
+        <button class="tool" id="btn-perf" type="button"
+                aria-pressed="false"
+                aria-label="Toggle reduced graphics effects for low-power machines"
+                title="Performance mode (P)">
+          <span class="tool__glyph" aria-hidden="true">⚡</span>
+          <span class="tool__label">Full FX</span>
+        </button>
+
+        <button class="tool tool--icon" id="btn-help" type="button"
+                aria-label="Keyboard shortcuts and help" title="Help (?)">
+          <span class="tool__glyph" aria-hidden="true">?</span>
+        </button>
+
+        <span class="net-badge" id="net-badge" data-state="online"
+              role="status" aria-live="polite">
+          <i class="net-badge__dot" aria-hidden="true"></i>
+          <span id="net-badge-text">Online</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- ─────────── MAIN: VIEWPORT + PANELS ─────────── -->
+    <main class="stage" role="main">
+
+      <!-- 3D viewport (canvas is created by js/scene.js in STEP 2) -->
+      <div class="viewport" id="viewport">
+        <div class="viewport__canvas" id="canvas-host"></div>
+
+        <noscript>
+          <div class="noscript">
+            <p><strong>JavaScript is required.</strong> This trainer renders
+            navigational light arcs with WebGL and cannot run without it.</p>
+          </div>
+        </noscript>
+
+        <!-- Aspect Angle Meter (fed live by STEP 2) -->
+        <div class="aspect" id="aspect-meter">
+          <svg class="aspect__rose" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+            <circle class="aspect__rose-bg" cx="60" cy="60" r="52" />
+            <circle class="aspect__rose-ring" cx="60" cy="60" r="52" />
+            <!-- 112.5° sidelight arcs, drawn as reference ticks -->
+            <g class="aspect__ticks" id="aspect-ticks"></g>
+            <g id="aspect-needle" class="aspect__needle">
+              <path d="M60 14 L54 34 L60 30 L66 34 Z" />
+            </g>
+            <circle class="aspect__hub" cx="60" cy="60" r="4" />
+            <text class="aspect__cardinal" x="60" y="12" text-anchor="middle">BOW</text>
+            <text class="aspect__cardinal" x="60" y="114" text-anchor="middle">STERN</text>
+          </svg>
+
+          <div class="aspect__readout">
+            <p class="aspect__label">Own eye bearing</p>
+            <p class="aspect__value">
+              <span id="aspect-value">---</span><span class="aspect__deg">°</span>
+            </p>
+            <p class="aspect__sector" id="aspect-sector">Awaiting scene</p>
+            <p class="aspect__range">Range <span id="aspect-range">----</span> m</p>
+          </div>
+        </div>
+
+        <!-- Floating viewport toolbar -->
+        <div class="viewtools" role="toolbar" aria-label="Viewport controls">
+          <button class="viewtool" type="button" id="btn-reset-camera"
+                  aria-label="Reset camera to default aspect" title="Reset view (R)">
+            <span aria-hidden="true">⟲</span><span class="viewtool__t">Reset</span>
+          </button>
+          <button class="viewtool" type="button" id="btn-shapes"
+                  aria-pressed="false"
+                  aria-label="Toggle daytime shapes, Rule 31" title="Day shapes (S)">
+            <span aria-hidden="true">◆</span><span class="viewtool__t">Shapes</span>
+          </button>
+          <button class="viewtool" type="button" id="btn-arcs"
+                  aria-pressed="false"
+                  aria-label="Toggle visible light arc cones" title="Light arcs (A)">
+            <span aria-hidden="true">◟</span><span class="viewtool__t">Arcs</span>
+          </button>
+          <button class="viewtool" type="button" id="btn-debug"
+                  aria-pressed="false"
+                  aria-label="Toggle arc verification debug overlay" title="Debug overlay (G)">
+            <span aria-hidden="true">⌗</span><span class="viewtool__t">Debug</span>
+          </button>
+        </div>
+
+        <!-- Arc verification overlay (populated in STEP 3) -->
+        <div class="debug" id="debug-overlay" hidden aria-hidden="true">
+          <p class="debug__title">Arc verification — Annex I / Rule 21</p>
+          <ul class="debug__list" id="debug-list">
+            <li class="debug__row"><span>Awaiting Light Sector Engine (STEP 3)</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ─────────── SIDE PANEL REGION ─────────── -->
+      <div class="panels" id="panel-region" role="tabpanel"
+           aria-labelledby="tab-learn" tabindex="-1">
+
+        <!-- ========== LEARN ========== -->
+        <section class="panel glass" data-for="learn" aria-label="Vessel catalogue">
+          <header class="panel__head">
+            <h2 class="panel__title">Vessel Catalogue</h2>
+            <p class="panel__sub">Rules 21–31 · lights &amp; shapes</p>
+          </header>
+
+          <div class="panel__body">
+            <div class="field">
+              <label class="field__label" for="catalogue-search">Filter</label>
+              <input class="field__input" type="search" id="catalogue-search"
+                     placeholder="e.g. trawler, RAM, towing…"
+                     autocomplete="off" spellcheck="false">
+            </div>
+
+            <div class="chips" role="group" aria-label="Filter by rule">
+              <button class="chip" type="button" data-rule-filter="all" aria-pressed="true">All</button>
+              <button class="chip" type="button" data-rule-filter="23" aria-pressed="false">R23</button>
+              <button class="chip" type="button" data-rule-filter="24" aria-pressed="false">R24</button>
+              <button class="chip" type="button" data-rule-filter="25" aria-pressed="false">R25</button>
+              <button class="chip" type="button" data-rule-filter="26" aria-pressed="false">R26</button>
+              <button class="chip" type="button" data-rule-filter="27" aria-pressed="false">R27</button>
+              <button class="chip" type="button" data-rule-filter="28" aria-pressed="false">R28</button>
+              <button class="chip" type="button" data-rule-filter="29" aria-pressed="false">R29</button>
+              <button class="chip" type="button" data-rule-filter="30" aria-pressed="false">R30</button>
+            </div>
+
+            <ul class="catalogue" id="catalogue" role="listbox"
+                aria-label="Vessel configurations">
+              <li class="catalogue__empty" id="catalogue-empty">
+                Catalogue loads from <code>data/colreg-rules.json</code> in STEP&nbsp;4.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel panel--grow glass" data-for="learn" aria-label="Configuration detail">
+          <header class="panel__head">
+            <h2 class="panel__title" id="detail-title">Select a vessel</h2>
+            <p class="panel__sub" id="detail-rule">—</p>
+          </header>
+
+          <div class="panel__body" id="detail-body">
+            <div class="placeholder">
+              <p>Pick a configuration from the catalogue to display its
+                 prescribed lights, arcs of visibility and day shapes.</p>
+            </div>
+
+            <dl class="lightlist" id="detail-lights" hidden></dl>
+          </div>
+        </section>
+
+        <!-- ========== QUIZ ========== -->
+        <section class="panel glass" data-for="quiz" aria-label="Quiz progress">
+          <header class="panel__head">
+            <h2 class="panel__title">Progress</h2>
+            <p class="panel__sub">Saved locally on this device</p>
+          </header>
+
+          <div class="panel__body">
+            <div class="scoreboard">
+              <div class="score">
+                <span class="score__k">Score</span>
+                <span class="score__v" id="quiz-score">0</span>
+              </div>
+              <div class="score">
+                <span class="score__k">Streak</span>
+                <span class="score__v" id="quiz-streak">0</span>
+              </div>
+              <div class="score">
+                <span class="score__k">Multiplier</span>
+                <span class="score__v" id="quiz-mult">×1.0</span>
+              </div>
+              <div class="score">
+                <span class="score__k">Best</span>
+                <span class="score__v" id="quiz-best">0</span>
+              </div>
+            </div>
+
+            <h3 class="subhead">Quiz mode</h3>
+            <div class="segmented" role="radiogroup" aria-label="Quiz mode">
+              <button class="seg" type="button" role="radio" aria-checked="true"  data-quiz-mode="A">A · Aspect</button>
+              <button class="seg" type="button" role="radio" aria-checked="false" data-quiz-mode="B">B · Night→Day</button>
+              <button class="seg" type="button" role="radio" aria-checked="false" data-quiz-mode="C">C · Rule ref</button>
+            </div>
+
+            <h3 class="subhead">Weak areas</h3>
+            <ul class="weak" id="quiz-weak">
+              <li class="weak__empty">No data yet — answer some questions.</li>
+            </ul>
+
+            <button class="btn btn--ghost btn--block" type="button" id="btn-reset-progress">
+              Reset saved progress
+            </button>
+          </div>
+        </section>
+
+        <section class="panel panel--grow glass" data-for="quiz" aria-label="Question">
+          <header class="panel__head">
+            <h2 class="panel__title">Question <span id="quiz-index">—</span></h2>
+            <p class="panel__sub" id="quiz-mode-label">Mode A · Identify the aspect</p>
+          </header>
+
+          <div class="panel__body">
+            <p class="question" id="quiz-question">
+              The Quiz Engine is delivered in STEP&nbsp;5. This panel is its shell.
+            </p>
+
+            <ul class="answers" id="quiz-answers" role="radiogroup"
+                aria-label="Answer options"></ul>
+
+            <div class="feedback" id="quiz-feedback" role="status"
+                 aria-live="polite" hidden></div>
+
+            <div class="panel__actions">
+              <button class="btn btn--primary" type="button" id="btn-quiz-submit" disabled>
+                Submit answer
+              </button>
+              <button class="btn btn--ghost" type="button" id="btn-quiz-next" disabled>
+                Next →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== SIMULATOR ========== -->
+        <section class="panel glass" data-for="simulator" aria-label="Encounter setup">
+          <header class="panel__head">
+            <h2 class="panel__title">Encounter Setup</h2>
+            <p class="panel__sub">Rules 13–15 · live geometry</p>
+          </header>
+
+          <div class="panel__body">
+            <div class="field">
+              <label class="field__label" for="sim-bearing">
+                Relative bearing of target
+                <output class="field__out" id="sim-bearing-out">045°</output>
+              </label>
+              <input class="slider" type="range" id="sim-bearing"
+                     min="0" max="359" step="1" value="45"
+                     aria-valuetext="045 degrees">
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="sim-heading">
+                Target heading
+                <output class="field__out" id="sim-heading-out">270°</output>
+              </label>
+              <input class="slider" type="range" id="sim-heading"
+                     min="0" max="359" step="1" value="270"
+                     aria-valuetext="270 degrees">
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="sim-range">
+                Range
+                <output class="field__out" id="sim-range-out">1.5 NM</output>
+              </label>
+              <input class="slider" type="range" id="sim-range"
+                     min="2" max="60" step="1" value="15"
+                     aria-valuetext="1.5 nautical miles">
+            </div>
+
+            <h3 class="subhead">Presets</h3>
+            <div class="chips" role="group" aria-label="Encounter presets">
+              <button class="chip" type="button" data-sim-preset="headon">Head-on</button>
+              <button class="chip" type="button" data-sim-preset="crossing">Crossing</button>
+              <button class="chip" type="button" data-sim-preset="overtaking">Overtaking</button>
+            </div>
+
+            <h3 class="subhead">Overlays</h3>
+            <div class="toggles">
+              <label class="toggle">
+                <input type="checkbox" id="sim-show-bearings" checked>
+                <span>Bearing lines</span>
+              </label>
+              <label class="toggle">
+                <input type="checkbox" id="sim-show-vectors" checked>
+                <span>Manoeuvre vectors</span>
+              </label>
+              <label class="toggle">
+                <input type="checkbox" id="sim-show-sectors">
+                <span>Sidelight sectors</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel panel--grow glass" data-for="simulator" aria-label="Situation classification">
+          <header class="panel__head">
+            <h2 class="panel__title">Classification</h2>
+            <p class="panel__sub">Derived from geometry, not presets</p>
+          </header>
+
+          <div class="panel__body">
+            <div class="verdict" id="sim-verdict" data-state="idle">
+              <p class="verdict__rule" id="sim-rule">Rule —</p>
+              <p class="verdict__name" id="sim-situation">Simulator loads in STEP&nbsp;6</p>
+            </div>
+
+            <dl class="kv">
+              <div class="kv__row">
+                <dt>Own vessel</dt>
+                <dd id="sim-own-role">—</dd>
+              </div>
+              <div class="kv__row">
+                <dt>Target vessel</dt>
+                <dd id="sim-target-role">—</dd>
+              </div>
+              <div class="kv__row">
+                <dt>Aspect of target</dt>
+                <dd id="sim-aspect">—</dd>
+              </div>
+              <div class="kv__row">
+                <dt>Lights you would see</dt>
+                <dd id="sim-visible-lights">—</dd>
+              </div>
+            </dl>
+
+            <div class="advice" id="sim-advice">
+              <p>Required action will be cited here with its rule paragraph.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- ─────────── STATUS BAR ─────────── -->
+    <footer class="statusbar" role="contentinfo">
+      <span class="stat" title="Frames per second">
+        <span class="stat__k">FPS</span>
+        <span class="stat__v" id="stat-fps">--</span>
+      </span>
+      <span class="stat" title="Rendered triangles">
+        <span class="stat__k">TRIS</span>
+        <span class="stat__v" id="stat-tris">--</span>
+      </span>
+      <span class="stat" title="Draw calls">
+        <span class="stat__k">CALLS</span>
+        <span class="stat__v" id="stat-calls">--</span>
+      </span>
+      <span class="stat stat--grow" id="stat-hint">
+        Three.js r185 · offline-ready · budget ≈ 60k tris
+      </span>
+      <span class="stat" title="Service worker / cache state">
+        <span class="stat__k">CACHE</span>
+        <span class="stat__v" id="stat-sw">checking…</span>
+      </span>
+      <span class="stat stat--muted" id="stat-version">v0.1.0 · STEP 1</span>
+    </footer>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       HELP DIALOG
+       ══════════════════════════════════════════════════════════ -->
+  <dialog class="dialog glass" id="help-dialog" aria-labelledby="help-title">
+    <form method="dialog" class="dialog__form">
+      <header class="dialog__head">
+        <h2 class="dialog__title" id="help-title">Keyboard &amp; touch</h2>
+        <button class="dialog__close" value="close" aria-label="Close help">✕</button>
+      </header>
+
+      <div class="dialog__body">
+        <h3 class="subhead">Global</h3>
+        <ul class="keys">
+          <li><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> <span>Switch mode</span></li>
+          <li><kbd>D</kbd> <span>Day / night</span></li>
+          <li><kbd>P</kbd> <span>Performance mode</span></li>
+          <li><kbd>R</kbd> <span>Reset camera</span></li>
+          <li><kbd>S</kbd> <span>Toggle day shapes</span></li>
+          <li><kbd>A</kbd> <span>Toggle light arcs</span></li>
+          <li><kbd>G</kbd> <span>Debug / arc verification</span></li>
+          <li><kbd>?</kbd> <span>This dialog</span></li>
+        </ul>
+
+        <h3 class="subhead">Quiz</h3>
+        <ul class="keys">
+          <li><kbd>Tab</kbd> <span>Move between controls</span></li>
+          <li><kbd>↑</kbd><kbd>↓</kbd> <span>Move between answers</span></li>
+          <li><kbd>Enter</kbd> <span>Select / submit</span></li>
+          <li><kbd>N</kbd> <span>Next question</span></li>
+        </ul>
+
+        <h3 class="subhead">Touch (tablet)</h3>
+        <ul class="keys">
+          <li><kbd>1 finger</kbd> <span>Orbit around the vessel</span></li>
+          <li><kbd>2 fingers</kbd> <span>Pinch to zoom / pan</span></li>
+        </ul>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Toast / update notifications -->
+  <div class="toasts" id="toasts" role="alert" aria-live="assertive" aria-atomic="false"></div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

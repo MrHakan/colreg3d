@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "title": "COLREG lights and shapes — Rules 21-31",
+  "source": "Convention on the International Regulations for Preventing Collisions at Sea, 1972 (COLREG 72), as amended, Part C (Lights and Shapes) and Annex I (Positioning and technical details of lights and shapes).",
+  "status": "STEP 1 placeholder — the full dataset is delivered in STEP 4.",
+  "_entryShape": {
+    "id": "kebab-case unique key, e.g. power-driven-under-50m",
+    "name": "Display name, e.g. Power-driven vessel underway, less than 50 m",
+    "category": "power | towing | sailing | fishing | restricted | pilot | anchored | aground",
+    "lengthCategory": "under-12m | under-20m | under-50m | 50m-and-over | any",
+    "status": "underway | making-way | at-anchor | aground | not-under-command",
+    "rule": {
+      "number": "23",
+      "paragraph": "(a)",
+      "citation": "Rule 23(a) — Power-driven vessels underway"
+    },
+    "lights": [
+      {
+        "id": "masthead-forward",
+        "colour": "white | red | green | yellow | blue",
+        "arc": "degrees, from js/lights.js ARCS",
+        "arcCentre": "relative bearing of the arc centre, 0 = right ahead",
+        "position": "Annex I positioning note, e.g. forward masthead, 6 m above the hull",
+        "note": "free text"
+      }
+    ],
+    "dayShapes": [
+      {
+        "shape": "ball | cone | diamond | cylinder",
+        "count": 1,
+        "arrangement": "vertical line | apexes together | where best seen",
+        "rule": "Rule 27(b)(i)"
+      }
+    ],
+    "quizHints": {
+      "commonConfusions": ["ids of entries learners mix this one up with"]
+    }
+  },
+  "entries": []
+}

@@ -1,0 +1,63 @@
+{
+  "name": "COLREG 3D — Navigational Lights & Shapes Trainer",
+  "short_name": "COLREG 3D",
+  "description": "Offline 3D trainer for the International Regulations for Preventing Collisions at Sea: light arcs, day shapes, aspect identification and encounter classification (Rules 13-31).",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#05080f",
+  "theme_color": "#05080f",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["education", "navigation", "utilities"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Vessel catalogue",
+      "short_name": "Learn",
+      "description": "Browse lights and shapes for Rules 21-31",
+      "url": "./?mode=learn"
+    },
+    {
+      "name": "Start a quiz",
+      "short_name": "Quiz",
+      "description": "Identify vessels by their lights and shapes",
+      "url": "./?mode=quiz"
+    },
+    {
+      "name": "Encounter simulator",
+      "short_name": "Encounters",
+      "description": "Classify head-on, crossing and overtaking situations",
+      "url": "./?mode=simulator"
+    }
+  ]
+}
