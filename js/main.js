@@ -30,7 +30,7 @@ import { loadColregData } from './colreg-data.js';  // STEP 4
 import { initQuiz }       from './quiz.js';         // STEP 5
 import { initSimulator }  from './simulator.js';    // STEP 6
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 const STORE_KEY = 'colreg3d:prefs';
 
 /** App-wide event bus. Modules listen instead of importing each other. */

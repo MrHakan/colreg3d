@@ -5,7 +5,7 @@ for Preventing Collisions at Sea (COLREG 72, as amended). Built to be dropped on
 GitHub Pages and then used with no connection at all — on a shipboard laptop or
 tablet, on the bridge, at night.
 
-**v1.0.0 — all seven build steps complete.**
+**v1.1.0 — all seven build steps complete; Three.js vendored, zero third-party requests.**
 
 | Mode | What it does |
 | --- | --- |
