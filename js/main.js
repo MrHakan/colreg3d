@@ -500,26 +500,55 @@ async function start() {
   boot.progress(50, 'Preparing render engine…');
   const scene = await initScene({ host: $('#canvas-host'), bus, prefs });
 
+  if (scene && !scene.pending) {
+    /* The render loop runs at 60 Hz; the DOM does not need to. Bearing text
+       is rewritten only when the rounded value actually changes, and the
+       counters four times a second. */
+    let lastBearing = -1;
+    let statsAccum = 0;
+
+    scene.onFrame((f) => {
+      const b = Math.round(f.bearing);
+      if (b !== lastBearing) {
+        lastBearing = b;
+        setAspect(b, f.range);
+      }
+
+      statsAccum += f.dt;
+      if (statsAccum >= 0.25) {
+        statsAccum = 0;
+        const info = scene.renderer.info.render;
+        setStats({ fps: f.fps, triangles: info.triangles, calls: info.calls });
+      }
+    });
+  }
+
   boot.progress(65, 'Preparing light sector engine…');
-  await initLights({ scene, bus });
+  const lights = await initLights({ scene, bus });
 
   boot.progress(78, 'Loading COLREG database…');
   const data = await loadColregData();
 
   boot.progress(88, 'Preparing quiz engine…');
-  await initQuiz({ bus, data });
+  const quiz = await initQuiz({ bus, data, scene, lights });
 
   boot.progress(94, 'Preparing encounter simulator…');
-  await initSimulator({ bus, data });
+  const simulator = await initSimulator({ bus, data, scene });
 
   boot.progress(100, 'Ready');
   setTimeout(() => boot.dismiss(), 260);
 
-  const pending = [scene, data].filter((m) => m && m.pending).length;
-  if (pending) {
-    toast('STEP 1 shell only — 3D scene, quiz and simulator arrive in STEPs 2-7.', {
-      kind: 'info', timeout: 7000
-    });
+  /* Report what is genuinely not wired up yet, rather than a hardcoded
+     message that drifts out of date as the steps land. */
+  const pending = [
+    ['3D scene', scene], ['light engine', lights], ['rule database', data],
+    ['quiz', quiz], ['simulator', simulator]
+  ].filter(([, m]) => m?.pending).map(([label]) => label);
+
+  if (scene?.failed) {
+    toast('3D view unavailable — Three.js could not be loaded.', { kind: 'warn', timeout: 9000 });
+  } else if (pending.length) {
+    toast(`Not yet wired up: ${pending.join(', ')}.`, { kind: 'info', timeout: 6000 });
   }
 
   emit('app:ready', { version: APP_VERSION });
