@@ -1,40 +1,637 @@
 {
   "schemaVersion": 1,
   "title": "COLREG lights and shapes — Rules 21-31",
-  "source": "Convention on the International Regulations for Preventing Collisions at Sea, 1972 (COLREG 72), as amended, Part C (Lights and Shapes) and Annex I (Positioning and technical details of lights and shapes).",
-  "status": "STEP 1 placeholder — the full dataset is delivered in STEP 4.",
-  "_entryShape": {
-    "id": "kebab-case unique key, e.g. power-driven-under-50m",
-    "name": "Display name, e.g. Power-driven vessel underway, less than 50 m",
-    "category": "power | towing | sailing | fishing | restricted | pilot | anchored | aground",
-    "lengthCategory": "under-12m | under-20m | under-50m | 50m-and-over | any",
-    "status": "underway | making-way | at-anchor | aground | not-under-command",
-    "rule": {
-      "number": "23",
-      "paragraph": "(a)",
-      "citation": "Rule 23(a) — Power-driven vessels underway"
-    },
-    "lights": [
-      {
-        "id": "masthead-forward",
-        "colour": "white | red | green | yellow | blue",
-        "arc": "degrees, from js/lights.js ARCS",
-        "arcCentre": "relative bearing of the arc centre, 0 = right ahead",
-        "position": "Annex I positioning note, e.g. forward masthead, 6 m above the hull",
-        "note": "free text"
-      }
-    ],
-    "dayShapes": [
-      {
-        "shape": "ball | cone | diamond | cylinder",
-        "count": 1,
-        "arrangement": "vertical line | apexes together | where best seen",
-        "rule": "Rule 27(b)(i)"
-      }
-    ],
-    "quizHints": {
-      "commonConfusions": ["ids of entries learners mix this one up with"]
-    }
+  "source": "Convention on the International Regulations for Preventing Collisions at Sea, 1972 (COLREG 72), as amended. Part C, Rules 20-31 (Lights and Shapes) and Annex I (Positioning and technical details of lights and shapes).",
+  "disclaimer": "Training aid. Wording is summarised, not quoted verbatim; the official IMO publication governs.",
+  "conventions": {
+    "arc": "Named arcs resolve against ARCS in js/lights.js: MASTHEAD 225, SIDELIGHT 112.5, STERNLIGHT 135, TOWING 135, ALL_ROUND 360.",
+    "arcCentre": "Relative bearing of the arc centre from the bow: MASTHEAD 0, SIDELIGHT_STBD 56.25, SIDELIGHT_PORT 303.75, STERNLIGHT 180, ALL_ROUND 0.",
+    "order": "Lights that share a vertical stack are listed highest first, matching how the Rules describe them."
   },
-  "entries": []
+  "entries": [
+    {
+      "id": "power-under-12m",
+      "name": "Power-driven vessel underway, less than 12 m",
+      "category": "power",
+      "lengthCategory": "under-12m",
+      "status": "underway",
+      "rule": { "number": "23", "paragraph": "(d)(i)", "citation": "Rule 23(d)(i)" },
+      "summary": "May exhibit an all-round white light and sidelights in lieu of the masthead/stern arrangement of Rule 23(a).",
+      "lights": [
+        { "id": "allround-white", "label": "All-round white", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen; may be off the centreline if centreline fitting is impracticable — Rule 23(d)(iii)", "rule": "Rule 23(d)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 23(d)(i)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 23(d)(i)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "One all-round white plus sidelights — no separate sternlight.", "commonConfusions": ["power-under-50m", "anchored-under-50m"] }
+    },
+    {
+      "id": "power-under-50m",
+      "name": "Power-driven vessel underway, less than 50 m",
+      "category": "power",
+      "lengthCategory": "under-50m",
+      "status": "underway",
+      "rule": { "number": "23", "paragraph": "(a)", "citation": "Rule 23(a)" },
+      "summary": "One masthead light forward, sidelights and a sternlight. A vessel of less than 50 m is not obliged to carry the second masthead light, but may.",
+      "lights": [
+        { "id": "masthead-fwd", "label": "Masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Forward, not less than 6 m above the hull — Annex I §2(a)(i)", "rule": "Rule 23(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side, not above three quarters of the masthead light height — Annex I §2(g)", "rule": "Rule 23(a)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 23(a)(iv)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "A single masthead light: from ahead you see one white light over the sidelights, not two.", "commonConfusions": ["power-50m-and-over", "sailing-underway"] }
+    },
+    {
+      "id": "power-50m-and-over",
+      "name": "Power-driven vessel underway, 50 m or more",
+      "category": "power",
+      "lengthCategory": "50m-and-over",
+      "status": "underway",
+      "rule": { "number": "23", "paragraph": "(a)", "citation": "Rule 23(a)" },
+      "summary": "Two masthead lights — the after one abaft of and higher than the forward one — sidelights and a sternlight. The pair of masthead lights is what gives you her heading and her size.",
+      "lights": [
+        { "id": "masthead-fwd", "label": "Forward masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Forward, not less than 6 m above the hull — Annex I §2(a)(i)", "rule": "Rule 23(a)(i)" },
+        { "id": "masthead-aft", "label": "After masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Abaft of and at least 4.5 m higher than the forward masthead light — Annex I §2(a)(ii)", "rule": "Rule 23(a)(ii)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 23(a)(iv)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "Two masthead lights, the after one higher — a 50 m or larger power-driven vessel.", "commonConfusions": ["power-under-50m", "towing-under-200m"] }
+    },
+    {
+      "id": "air-cushion",
+      "name": "Air-cushion vessel in non-displacement mode",
+      "category": "power",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "23", "paragraph": "(b)", "citation": "Rule 23(b)" },
+      "summary": "The lights of Rule 23(a), plus an all-round flashing yellow light.",
+      "lights": [
+        { "id": "allround-yellow-flashing", "label": "All-round flashing yellow", "colour": "yellow", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 23(b)", "flashing": true },
+        { "id": "masthead-fwd", "label": "Masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Forward", "rule": "Rule 23(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 23(a)(iv)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "Flashing yellow all-round on an otherwise ordinary power-driven vessel.", "commonConfusions": ["wig-craft"] }
+    },
+    {
+      "id": "wig-craft",
+      "name": "WIG craft taking off, landing or in flight near the surface",
+      "category": "power",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "23", "paragraph": "(c)", "citation": "Rule 23(c)" },
+      "summary": "Only when taking off, landing or in flight near the surface: the lights of Rule 23(a) plus a high-intensity all-round flashing red light.",
+      "lights": [
+        { "id": "allround-red-flashing", "label": "High-intensity all-round flashing red", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 23(c)", "flashing": true },
+        { "id": "masthead-fwd", "label": "Masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Forward", "rule": "Rule 23(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 23(a)(iv)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "Flashing RED all-round — WIG craft, not an air-cushion vessel.", "commonConfusions": ["air-cushion"] }
+    },
+    {
+      "id": "towing-under-200m",
+      "name": "Power-driven vessel towing, length of tow 200 m or less",
+      "category": "towing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "24", "paragraph": "(a)", "citation": "Rule 24(a)" },
+      "summary": "Two masthead lights in a vertical line in place of the Rule 23(a)(i)/(ii) light, sidelights, a sternlight, and a yellow towing light in a vertical line above the sternlight.",
+      "lights": [
+        { "id": "masthead-vert-2", "label": "Masthead light (upper of two)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Vertical line, forward", "rule": "Rule 24(a)(i)" },
+        { "id": "masthead-vert-3", "label": "Masthead light (lower of two)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Vertical line, forward", "rule": "Rule 24(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 24(a)(ii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 24(a)(ii)" },
+        { "id": "towing", "label": "Towing light (yellow)", "colour": "yellow", "arc": "TOWING", "arcCentre": "STERNLIGHT", "position": "In a vertical line above the sternlight", "rule": "Rule 24(a)(iv)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 24(a)(iii)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "Yellow over white from astern — the towing light above the sternlight.", "commonConfusions": ["towing-over-200m", "power-50m-and-over"] }
+    },
+    {
+      "id": "towing-over-200m",
+      "name": "Power-driven vessel towing, length of tow exceeding 200 m",
+      "category": "towing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "24", "paragraph": "(a)", "citation": "Rule 24(a)" },
+      "summary": "As for a shorter tow but with THREE masthead lights in a vertical line, and by day a diamond shape where it can best be seen. The length of tow is measured from the stern of the towing vessel to the after end of the tow.",
+      "lights": [
+        { "id": "masthead-vert-1", "label": "Masthead light (upper of three)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Vertical line, forward", "rule": "Rule 24(a)(i)" },
+        { "id": "masthead-vert-2", "label": "Masthead light (middle of three)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Vertical line, forward", "rule": "Rule 24(a)(i)" },
+        { "id": "masthead-vert-3", "label": "Masthead light (lower of three)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Vertical line, forward", "rule": "Rule 24(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 24(a)(ii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 24(a)(ii)" },
+        { "id": "towing", "label": "Towing light (yellow)", "colour": "yellow", "arc": "TOWING", "arcCentre": "STERNLIGHT", "position": "In a vertical line above the sternlight", "rule": "Rule 24(a)(iv)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 24(a)(iii)" }
+      ],
+      "dayShapes": [
+        { "shape": "diamond", "count": 1, "arrangement": "where best seen", "rule": "Rule 24(a)(v)", "note": "Exhibited by the towing vessel when the tow exceeds 200 m." }
+      ],
+      "quizHints": { "keySignature": "Three masthead lights in a vertical line — the tow is longer than 200 m.", "commonConfusions": ["towing-under-200m", "ram-towing"] }
+    },
+    {
+      "id": "pushing-composite",
+      "name": "Vessel pushing ahead or towing alongside as a composite unit",
+      "category": "towing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "24", "paragraph": "(b)", "citation": "Rule 24(b)" },
+      "summary": "A pushing vessel and a vessel being pushed ahead that are rigidly connected in a composite unit are regarded as one power-driven vessel and exhibit the lights of Rule 23.",
+      "lights": [
+        { "id": "masthead-fwd", "label": "Forward masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Forward", "rule": "Rule 23(a)(i)" },
+        { "id": "masthead-aft", "label": "After masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Abaft of and higher than the forward one", "rule": "Rule 23(a)(ii)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 23(a)(iv)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "Indistinguishable from an ordinary power-driven vessel — that is the point of a composite unit.", "commonConfusions": ["pushing-ahead", "power-50m-and-over"] }
+    },
+    {
+      "id": "pushing-ahead",
+      "name": "Power-driven vessel pushing ahead or towing alongside (not a composite unit)",
+      "category": "towing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "24", "paragraph": "(c)", "citation": "Rule 24(c)" },
+      "summary": "Two masthead lights in a vertical line, sidelights and a sternlight. Note there is no yellow towing light — that belongs to a vessel towing astern.",
+      "lights": [
+        { "id": "masthead-vert-2", "label": "Masthead light (upper of two)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Vertical line, forward", "rule": "Rule 24(c)(i)" },
+        { "id": "masthead-vert-3", "label": "Masthead light (lower of two)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Vertical line, forward", "rule": "Rule 24(c)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 24(c)(ii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 24(c)(ii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 24(c)(iii)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "Two masthead lights in a vertical line but NO yellow towing light.", "commonConfusions": ["towing-under-200m", "pushing-composite"] }
+    },
+    {
+      "id": "vessel-towed",
+      "name": "Vessel or object being towed",
+      "category": "towing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "24", "paragraph": "(e)", "citation": "Rule 24(e)" },
+      "summary": "Sidelights and a sternlight; and, when the length of tow exceeds 200 m, a diamond shape where it can best be seen. No masthead lights.",
+      "lights": [
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 24(e)(i)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 24(e)(i)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 24(e)(ii)" }
+      ],
+      "dayShapes": [
+        { "shape": "diamond", "count": 1, "arrangement": "where best seen", "rule": "Rule 24(e)(iii)", "note": "Only when the length of tow exceeds 200 m." }
+      ],
+      "quizHints": { "keySignature": "Sidelights and sternlight with no masthead light at all — she is not propelling herself.", "commonConfusions": ["sailing-underway"] }
+    },
+    {
+      "id": "sailing-underway",
+      "name": "Sailing vessel underway",
+      "category": "sailing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "25", "paragraph": "(a)", "citation": "Rule 25(a)" },
+      "summary": "Sidelights and a sternlight. No masthead light — that absence is the whole signature of a sailing vessel at night.",
+      "lights": [
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 25(a)(i)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 25(a)(i)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 25(a)(ii)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "Sidelights and sternlight, no masthead light.", "commonConfusions": ["vessel-towed", "sailing-and-machinery"] }
+    },
+    {
+      "id": "sailing-under-20m-combined",
+      "name": "Sailing vessel underway, less than 20 m — combined lantern",
+      "category": "sailing",
+      "lengthCategory": "under-20m",
+      "status": "underway",
+      "rule": { "number": "25", "paragraph": "(b)", "citation": "Rule 25(b)" },
+      "summary": "In a sailing vessel of less than 20 m the lights of Rule 25(a) may be combined in one lantern carried at or near the top of the mast where it can best be seen.",
+      "lights": [
+        { "id": "combined-lantern-stbd", "label": "Combined lantern — green sector", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "At or near the masthead", "rule": "Rule 25(b)" },
+        { "id": "combined-lantern-port", "label": "Combined lantern — red sector", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "At or near the masthead", "rule": "Rule 25(b)" },
+        { "id": "combined-lantern-stern", "label": "Combined lantern — white sector", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At or near the masthead", "rule": "Rule 25(b)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "All three sectors at one height, high up — a tricolour on a yacht under 20 m.", "commonConfusions": ["sailing-underway", "sailing-optional-red-green"] }
+    },
+    {
+      "id": "sailing-optional-red-green",
+      "name": "Sailing vessel underway with optional masthead red over green",
+      "category": "sailing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "25", "paragraph": "(c)", "citation": "Rule 25(c)" },
+      "summary": "In addition to the lights of Rule 25(a), two all-round lights in a vertical line at or near the top of the mast — upper red, lower green. These must NOT be exhibited together with the combined lantern of Rule 25(b).",
+      "lights": [
+        { "id": "allround-red", "label": "All-round red (upper)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "At or near the top of the mast", "rule": "Rule 25(c)" },
+        { "id": "allround-green", "label": "All-round green (lower)", "colour": "green", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Beneath the red, at or near the top of the mast", "rule": "Rule 25(c)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 25(a)(i)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 25(a)(i)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 25(a)(ii)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "Red over green, sailing machine — the optional masthead pair of Rule 25(c).", "commonConfusions": ["fishing-other", "nuc-not-making-way"] }
+    },
+    {
+      "id": "vessel-under-oars",
+      "name": "Vessel under oars",
+      "category": "sailing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "25", "paragraph": "(d)(ii)", "citation": "Rule 25(d)(ii)" },
+      "summary": "May exhibit the lights prescribed for a sailing vessel; if she does not, she shall have ready at hand an electric torch or lighted lantern showing a white light, exhibited in sufficient time to prevent collision.",
+      "lights": [
+        { "id": "allround-white", "label": "Torch or lantern (white)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Shown in sufficient time to prevent collision", "rule": "Rule 25(d)(ii)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "An intermittent white light with nothing else — the torch of Rule 25(d).", "commonConfusions": ["power-under-12m"] }
+    },
+    {
+      "id": "sailing-and-machinery",
+      "name": "Vessel under sail also being propelled by machinery",
+      "category": "power",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "25", "paragraph": "(e)", "citation": "Rule 25(e)" },
+      "summary": "By day, a conical shape apex downwards, forward where it can best be seen. She is a power-driven vessel for the purposes of Part B and therefore shows the Rule 23 lights at night.",
+      "lights": [
+        { "id": "masthead-fwd", "label": "Masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Forward", "rule": "Rule 23(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 23(a)(iv)" }
+      ],
+      "dayShapes": [
+        { "shape": "cone", "count": 1, "arrangement": "apex downwards", "rule": "Rule 25(e)", "note": "Forward, where it can best be seen." }
+      ],
+      "quizHints": { "keySignature": "A cone point-down by day — sails up but engine running, so treat her as power-driven.", "commonConfusions": ["sailing-underway"] }
+    },
+    {
+      "id": "fishing-trawling",
+      "name": "Vessel engaged in trawling",
+      "category": "fishing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "26", "paragraph": "(b)", "citation": "Rule 26(b)" },
+      "summary": "Two all-round lights in a vertical line, GREEN over WHITE; a masthead light abaft of and higher than the green light (a vessel of less than 50 m is not obliged to carry it); and, when making way, sidelights and a sternlight. By day, two cones apexes together.",
+      "lights": [
+        { "id": "allround-green", "label": "All-round green (upper)", "colour": "green", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 26(b)(i)" },
+        { "id": "allround-white", "label": "All-round white (lower)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Beneath the green", "rule": "Rule 26(b)(i)" },
+        { "id": "masthead-aft", "label": "Masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Abaft of and higher than the all-round green light", "rule": "Rule 26(b)(ii)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side — only when making way", "rule": "Rule 26(b)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side — only when making way", "rule": "Rule 26(b)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern — only when making way", "rule": "Rule 26(b)(iii)" }
+      ],
+      "dayShapes": [
+        { "shape": "cone", "count": 2, "arrangement": "apexes-together", "rule": "Rule 26(b)(i)", "note": "Two cones with their apexes together in a vertical line." }
+      ],
+      "quizHints": { "keySignature": "GREEN over WHITE — trawling. \"Green over white, trawling at night.\"", "commonConfusions": ["fishing-other", "pilot-underway"] }
+    },
+    {
+      "id": "fishing-other",
+      "name": "Vessel engaged in fishing other than trawling",
+      "category": "fishing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "26", "paragraph": "(c)", "citation": "Rule 26(c)" },
+      "summary": "Two all-round lights in a vertical line, RED over WHITE; and, when making way, sidelights and a sternlight. By day, two cones apexes together.",
+      "lights": [
+        { "id": "allround-red", "label": "All-round red (upper)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 26(c)(i)" },
+        { "id": "allround-white", "label": "All-round white (lower)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Beneath the red", "rule": "Rule 26(c)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side — only when making way", "rule": "Rule 26(c)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side — only when making way", "rule": "Rule 26(c)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern — only when making way", "rule": "Rule 26(c)(iii)" }
+      ],
+      "dayShapes": [
+        { "shape": "cone", "count": 2, "arrangement": "apexes-together", "rule": "Rule 26(c)(i)", "note": "Two cones with their apexes together in a vertical line." }
+      ],
+      "quizHints": { "keySignature": "RED over WHITE — fishing, not trawling. \"Red over white, fishing at night.\"", "commonConfusions": ["fishing-trawling", "pilot-underway", "sailing-optional-red-green"] }
+    },
+    {
+      "id": "fishing-other-gear-150m",
+      "name": "Vessel fishing with outlying gear extending more than 150 m",
+      "category": "fishing",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "26", "paragraph": "(c)(ii)", "citation": "Rule 26(c)(ii)" },
+      "summary": "As for fishing other than trawling, plus an all-round white light — or, by day, a cone apex upwards — in the direction of the gear.",
+      "lights": [
+        { "id": "allround-red", "label": "All-round red (upper)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 26(c)(i)" },
+        { "id": "allround-white", "label": "All-round white (lower)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Beneath the red", "rule": "Rule 26(c)(i)" },
+        { "id": "gear-white", "label": "All-round white — direction of gear", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "In the direction of the outlying gear", "rule": "Rule 26(c)(ii)" }
+      ],
+      "dayShapes": [
+        { "shape": "cone", "count": 2, "arrangement": "apexes-together", "rule": "Rule 26(c)(i)" },
+        { "shape": "cone", "count": 1, "arrangement": "apex upwards", "rule": "Rule 26(c)(ii)", "note": "In the direction of the gear." }
+      ],
+      "quizHints": { "keySignature": "Red over white plus a third white offset to one side — her gear runs that way for over 150 m.", "commonConfusions": ["fishing-other"] }
+    },
+    {
+      "id": "nuc-not-making-way",
+      "name": "Vessel not under command, not making way",
+      "category": "restricted",
+      "lengthCategory": "any",
+      "status": "not-under-command",
+      "rule": { "number": "27", "paragraph": "(a)", "citation": "Rule 27(a)" },
+      "summary": "Two all-round RED lights in a vertical line where they can best be seen, and by day two balls in a vertical line. No sidelights or sternlight while she is not making way through the water.",
+      "lights": [
+        { "id": "allround-red-upper", "label": "All-round red (upper)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 27(a)(i)" },
+        { "id": "allround-red-lower", "label": "All-round red (lower)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Beneath the upper red", "rule": "Rule 27(a)(i)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 2, "arrangement": "vertical line", "rule": "Rule 27(a)(ii)" }
+      ],
+      "quizHints": { "keySignature": "Two all-round reds and nothing else — \"red over red, the captain is dead.\"", "commonConfusions": ["nuc-making-way", "aground", "ram"] }
+    },
+    {
+      "id": "nuc-making-way",
+      "name": "Vessel not under command, making way",
+      "category": "restricted",
+      "lengthCategory": "any",
+      "status": "not-under-command",
+      "rule": { "number": "27", "paragraph": "(a)(iii)", "citation": "Rule 27(a)(iii)" },
+      "summary": "The two all-round red lights, plus sidelights and a sternlight when making way through the water. Still no masthead light — she is not under command.",
+      "lights": [
+        { "id": "allround-red-upper", "label": "All-round red (upper)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 27(a)(i)" },
+        { "id": "allround-red-lower", "label": "All-round red (lower)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Beneath the upper red", "rule": "Rule 27(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 27(a)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 27(a)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 27(a)(iii)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 2, "arrangement": "vertical line", "rule": "Rule 27(a)(ii)" }
+      ],
+      "quizHints": { "keySignature": "Two reds with sidelights but no masthead light — NUC still moving through the water.", "commonConfusions": ["nuc-not-making-way", "ram-making-way"] }
+    },
+    {
+      "id": "ram",
+      "name": "Vessel restricted in her ability to manoeuvre",
+      "category": "restricted",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "27", "paragraph": "(b)", "citation": "Rule 27(b)" },
+      "summary": "Three all-round lights in a vertical line — highest and lowest RED, middle WHITE. By day, ball–diamond–ball. Does not apply to a vessel engaged in mine clearance.",
+      "lights": [
+        { "id": "allround-red-upper", "label": "All-round red (highest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 27(b)(i)" },
+        { "id": "allround-white-middle", "label": "All-round white (middle)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Between the two reds", "rule": "Rule 27(b)(i)" },
+        { "id": "allround-red-lower", "label": "All-round red (lowest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Lowest of the three", "rule": "Rule 27(b)(i)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 1, "arrangement": "highest of three", "rule": "Rule 27(b)(ii)" },
+        { "shape": "diamond", "count": 1, "arrangement": "middle of three", "rule": "Rule 27(b)(ii)" },
+        { "shape": "ball", "count": 1, "arrangement": "lowest of three", "rule": "Rule 27(b)(ii)" }
+      ],
+      "quizHints": { "keySignature": "Red–white–red in a vertical line — \"restricted man.\"", "commonConfusions": ["nuc-not-making-way", "constrained-by-draught", "ram-dredging"] }
+    },
+    {
+      "id": "ram-making-way",
+      "name": "Vessel restricted in her ability to manoeuvre, making way",
+      "category": "restricted",
+      "lengthCategory": "any",
+      "status": "making-way",
+      "rule": { "number": "27", "paragraph": "(b)(iii)", "citation": "Rule 27(b)(iii)" },
+      "summary": "The red–white–red group, and in addition masthead light(s), sidelights and a sternlight when making way through the water.",
+      "lights": [
+        { "id": "allround-red-upper", "label": "All-round red (highest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 27(b)(i)" },
+        { "id": "allround-white-middle", "label": "All-round white (middle)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Between the two reds", "rule": "Rule 27(b)(i)" },
+        { "id": "allround-red-lower", "label": "All-round red (lowest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Lowest of the three", "rule": "Rule 27(b)(i)" },
+        { "id": "masthead-fwd", "label": "Masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Forward", "rule": "Rule 27(b)(iii)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 27(b)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 27(b)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 27(b)(iii)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 1, "arrangement": "highest of three", "rule": "Rule 27(b)(ii)" },
+        { "shape": "diamond", "count": 1, "arrangement": "middle of three", "rule": "Rule 27(b)(ii)" },
+        { "shape": "ball", "count": 1, "arrangement": "lowest of three", "rule": "Rule 27(b)(ii)" }
+      ],
+      "quizHints": { "keySignature": "Red–white–red WITH a masthead light and sidelights — RAM under way and making way.", "commonConfusions": ["ram", "nuc-making-way"] }
+    },
+    {
+      "id": "ram-towing",
+      "name": "Vessel engaged in a towing operation that severely restricts the tow's ability to deviate",
+      "category": "restricted",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "27", "paragraph": "(c)", "citation": "Rule 27(c)" },
+      "summary": "The red–white–red lights and ball–diamond–ball shapes of Rule 27(b), in addition to the full towing display of Rule 24(a).",
+      "lights": [
+        { "id": "allround-red-upper", "label": "All-round red (highest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 27(b)(i)" },
+        { "id": "allround-white-middle", "label": "All-round white (middle)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Between the two reds", "rule": "Rule 27(b)(i)" },
+        { "id": "allround-red-lower", "label": "All-round red (lowest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Lowest of the three", "rule": "Rule 27(b)(i)" },
+        { "id": "masthead-vert-2", "label": "Masthead light (upper of two)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Vertical line, forward", "rule": "Rule 24(a)(i)" },
+        { "id": "masthead-vert-3", "label": "Masthead light (lower of two)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Vertical line, forward", "rule": "Rule 24(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 24(a)(ii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 24(a)(ii)" },
+        { "id": "towing", "label": "Towing light (yellow)", "colour": "yellow", "arc": "TOWING", "arcCentre": "STERNLIGHT", "position": "Above the sternlight", "rule": "Rule 24(a)(iv)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 24(a)(iii)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 1, "arrangement": "highest of three", "rule": "Rule 27(b)(ii)" },
+        { "shape": "diamond", "count": 1, "arrangement": "middle of three", "rule": "Rule 27(b)(ii)" },
+        { "shape": "ball", "count": 1, "arrangement": "lowest of three", "rule": "Rule 27(b)(ii)" }
+      ],
+      "quizHints": { "keySignature": "A towing display AND red–white–red — she cannot deviate from her course.", "commonConfusions": ["towing-over-200m", "ram"] }
+    },
+    {
+      "id": "ram-dredging",
+      "name": "Vessel engaged in dredging or underwater operations, restricted in ability to manoeuvre",
+      "category": "restricted",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "27", "paragraph": "(d)", "citation": "Rule 27(d)" },
+      "summary": "The red–white–red group of Rule 27(b), plus two all-round RED lights (or two balls) marking the side on which the obstruction lies, and two all-round GREEN lights (or two diamonds) marking the side on which another vessel may pass.",
+      "lights": [
+        { "id": "allround-red-upper", "label": "All-round red (highest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 27(b)(i)" },
+        { "id": "allround-white-middle", "label": "All-round white (middle)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Between the two reds", "rule": "Rule 27(b)(i)" },
+        { "id": "allround-red-lower", "label": "All-round red (lowest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Lowest of the three", "rule": "Rule 27(b)(i)" },
+        { "id": "obstruction-upper", "label": "Obstruction side — red (upper)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "On the side where the obstruction exists", "rule": "Rule 27(d)(i)" },
+        { "id": "obstruction-lower", "label": "Obstruction side — red (lower)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "On the side where the obstruction exists", "rule": "Rule 27(d)(i)" },
+        { "id": "safepass-upper", "label": "Safe-pass side — green (upper)", "colour": "green", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "On the side on which another vessel may pass", "rule": "Rule 27(d)(ii)" },
+        { "id": "safepass-lower", "label": "Safe-pass side — green (lower)", "colour": "green", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "On the side on which another vessel may pass", "rule": "Rule 27(d)(ii)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 1, "arrangement": "highest of three", "rule": "Rule 27(b)(ii)" },
+        { "shape": "diamond", "count": 1, "arrangement": "middle of three", "rule": "Rule 27(b)(ii)" },
+        { "shape": "ball", "count": 1, "arrangement": "lowest of three", "rule": "Rule 27(b)(ii)" }
+      ],
+      "quizHints": { "keySignature": "Two reds one side, two greens the other — pass on the green side.", "commonConfusions": ["ram", "diving-operations"] }
+    },
+    {
+      "id": "diving-operations",
+      "name": "Vessel engaged in diving operations (small vessel)",
+      "category": "restricted",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "27", "paragraph": "(e)", "citation": "Rule 27(e)" },
+      "summary": "Where her size makes the full Rule 27(d) display impracticable: three all-round lights in a vertical line, highest and lowest red and the middle white, and a rigid replica of the International Code flag \"A\" not less than 1 m in height.",
+      "lights": [
+        { "id": "allround-red-upper", "label": "All-round red (highest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 27(e)(i)" },
+        { "id": "allround-white-middle", "label": "All-round white (middle)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Between the two reds", "rule": "Rule 27(e)(i)" },
+        { "id": "allround-red-lower", "label": "All-round red (lowest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Lowest of the three", "rule": "Rule 27(e)(i)" }
+      ],
+      "dayShapes": [
+        { "shape": "cylinder", "count": 1, "arrangement": "rigid code flag A replica", "rule": "Rule 27(e)(ii)", "note": "Not less than 1 m in height; measures taken to ensure all-round visibility." }
+      ],
+      "quizHints": { "keySignature": "Red–white–red on a small craft with flag A — divers down.", "commonConfusions": ["ram", "ram-dredging"] }
+    },
+    {
+      "id": "mine-clearance",
+      "name": "Vessel engaged in mine clearance operations",
+      "category": "restricted",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "27", "paragraph": "(f)", "citation": "Rule 27(f)" },
+      "summary": "The Rule 23 lights for a power-driven vessel, plus three all-round GREEN lights or three balls — one near the foremast head and one at each end of the fore yard. Other vessels shall not approach within 1000 m.",
+      "lights": [
+        { "id": "allround-green-mast", "label": "All-round green — foremast head", "colour": "green", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Near the foremast head", "rule": "Rule 27(f)" },
+        { "id": "allround-green-stbd", "label": "All-round green — starboard yardarm", "colour": "green", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Starboard end of the fore yard", "rule": "Rule 27(f)" },
+        { "id": "allround-green-port", "label": "All-round green — port yardarm", "colour": "green", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Port end of the fore yard", "rule": "Rule 27(f)" },
+        { "id": "masthead-fwd", "label": "Masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Forward", "rule": "Rule 23(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 23(a)(iv)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 3, "arrangement": "one at the foremast head and one at each end of the fore yard", "rule": "Rule 27(f)" }
+      ],
+      "quizHints": { "keySignature": "Three greens in a triangle — keep 1000 m clear.", "commonConfusions": ["ram", "fishing-trawling"] }
+    },
+    {
+      "id": "constrained-by-draught",
+      "name": "Vessel constrained by her draught",
+      "category": "restricted",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "28", "paragraph": "", "citation": "Rule 28" },
+      "summary": "May exhibit, in addition to the Rule 23 lights, three all-round RED lights in a vertical line, or a cylinder, where they can best be seen.",
+      "lights": [
+        { "id": "allround-red-upper", "label": "All-round red (highest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 28" },
+        { "id": "allround-red-middle", "label": "All-round red (middle)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 28" },
+        { "id": "allround-red-lower", "label": "All-round red (lowest)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 28" },
+        { "id": "masthead-fwd", "label": "Forward masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Forward", "rule": "Rule 23(a)(i)" },
+        { "id": "masthead-aft", "label": "After masthead light", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "Abaft of and higher than the forward one", "rule": "Rule 23(a)(ii)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 23(a)(iii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 23(a)(iv)" }
+      ],
+      "dayShapes": [
+        { "shape": "cylinder", "count": 1, "arrangement": "where best seen", "rule": "Rule 28" }
+      ],
+      "quizHints": { "keySignature": "Three all-round reds in a vertical line, with normal power-driven lights still showing.", "commonConfusions": ["ram", "nuc-not-making-way"] }
+    },
+    {
+      "id": "pilot-underway",
+      "name": "Pilot vessel on pilotage duty, underway",
+      "category": "pilot",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "29", "paragraph": "(a)", "citation": "Rule 29(a)" },
+      "summary": "Two all-round lights in a vertical line at or near the masthead — upper WHITE, lower RED — and, when underway, sidelights and a sternlight in addition.",
+      "lights": [
+        { "id": "allround-white", "label": "All-round white (upper)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "At or near the masthead", "rule": "Rule 29(a)(i)" },
+        { "id": "allround-red", "label": "All-round red (lower)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Beneath the white", "rule": "Rule 29(a)(i)" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 29(a)(ii)" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 29(a)(ii)" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 29(a)(ii)" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "WHITE over RED — \"white over red, pilot ahead.\" Note the order is the reverse of fishing's red over white.", "commonConfusions": ["fishing-other", "fishing-trawling"] }
+    },
+    {
+      "id": "pilot-at-anchor",
+      "name": "Pilot vessel on pilotage duty, at anchor",
+      "category": "pilot",
+      "lengthCategory": "any",
+      "status": "at-anchor",
+      "rule": { "number": "29", "paragraph": "(a)(iii)", "citation": "Rule 29(a)(iii)" },
+      "summary": "The white-over-red identity lights, plus the anchor light(s) or shape prescribed by Rule 30.",
+      "lights": [
+        { "id": "allround-white", "label": "All-round white (upper)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "At or near the masthead", "rule": "Rule 29(a)(i)" },
+        { "id": "allround-red", "label": "All-round red (lower)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Beneath the white", "rule": "Rule 29(a)(i)" },
+        { "id": "anchor-fwd", "label": "Anchor light (forward)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "In the fore part", "rule": "Rule 30(a)(i)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 1, "arrangement": "in the fore part", "rule": "Rule 30(a)(i)" }
+      ],
+      "quizHints": { "keySignature": "White over red plus an anchor light — a pilot boat waiting on station.", "commonConfusions": ["pilot-underway", "anchored-under-50m"] }
+    },
+    {
+      "id": "anchored-under-50m",
+      "name": "Vessel at anchor, less than 50 m",
+      "category": "anchored",
+      "lengthCategory": "under-50m",
+      "status": "at-anchor",
+      "rule": { "number": "30", "paragraph": "(b)", "citation": "Rule 30(b)" },
+      "summary": "May exhibit a single all-round white light where it can best be seen, instead of the two lights of Rule 30(a). By day, one ball in the fore part.",
+      "lights": [
+        { "id": "anchor-fwd", "label": "All-round white anchor light", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 30(b)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 1, "arrangement": "in the fore part", "rule": "Rule 30(a)(i)" }
+      ],
+      "quizHints": { "keySignature": "One all-round white and nothing else, not moving.", "commonConfusions": ["anchored-50m-and-over", "power-under-12m"] }
+    },
+    {
+      "id": "anchored-50m-and-over",
+      "name": "Vessel at anchor, 50 m or more",
+      "category": "anchored",
+      "lengthCategory": "50m-and-over",
+      "status": "at-anchor",
+      "rule": { "number": "30", "paragraph": "(a)", "citation": "Rule 30(a)" },
+      "summary": "An all-round white light in the fore part, and a second all-round white light at or near the stern and LOWER than the forward one. A vessel of 100 m or more shall also use available working lights to illuminate her decks.",
+      "lights": [
+        { "id": "anchor-fwd", "label": "Anchor light (forward, higher)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "In the fore part", "rule": "Rule 30(a)(i)" },
+        { "id": "anchor-aft", "label": "Anchor light (aft, lower)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "At or near the stern, lower than the forward light", "rule": "Rule 30(a)(ii)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 1, "arrangement": "in the fore part", "rule": "Rule 30(a)(i)" }
+      ],
+      "quizHints": { "keySignature": "Two whites, the forward one HIGHER — a large vessel at anchor. Deck lights are the giveaway at 100 m and over.", "commonConfusions": ["anchored-under-50m", "aground"] }
+    },
+    {
+      "id": "aground",
+      "name": "Vessel aground",
+      "category": "aground",
+      "lengthCategory": "any",
+      "status": "aground",
+      "rule": { "number": "30", "paragraph": "(d)", "citation": "Rule 30(d)" },
+      "summary": "The anchor lights of Rule 30(a) or (b), plus two all-round RED lights in a vertical line where they can best be seen. By day, three balls in a vertical line.",
+      "lights": [
+        { "id": "allround-red-upper", "label": "All-round red (upper)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Where best seen", "rule": "Rule 30(d)(i)" },
+        { "id": "allround-red-lower", "label": "All-round red (lower)", "colour": "red", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "Beneath the upper red", "rule": "Rule 30(d)(i)" },
+        { "id": "anchor-fwd", "label": "Anchor light (forward)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "In the fore part", "rule": "Rule 30(a)(i)" },
+        { "id": "anchor-aft", "label": "Anchor light (aft, lower)", "colour": "white", "arc": "ALL_ROUND", "arcCentre": "ALL_ROUND", "position": "At or near the stern", "rule": "Rule 30(a)(ii)" }
+      ],
+      "dayShapes": [
+        { "shape": "ball", "count": 3, "arrangement": "vertical line", "rule": "Rule 30(d)(ii)" }
+      ],
+      "quizHints": { "keySignature": "Two reds PLUS anchor lights — aground, not merely not under command. Three balls by day.", "commonConfusions": ["nuc-not-making-way", "anchored-50m-and-over"] }
+    },
+    {
+      "id": "seaplane",
+      "name": "Seaplane or WIG craft unable to comply",
+      "category": "power",
+      "lengthCategory": "any",
+      "status": "underway",
+      "rule": { "number": "31", "paragraph": "", "citation": "Rule 31" },
+      "summary": "Where it is impracticable for a seaplane or a WIG craft to exhibit lights and shapes of the characteristics or in the positions prescribed by the Rules of Part C, she shall exhibit lights and shapes as closely similar in characteristics and position as is possible.",
+      "lights": [
+        { "id": "masthead-fwd", "label": "Masthead light (as close as possible)", "colour": "white", "arc": "MASTHEAD", "arcCentre": "MASTHEAD", "position": "As near the prescribed position as practicable", "rule": "Rule 31" },
+        { "id": "sidelight-stbd", "label": "Starboard sidelight", "colour": "green", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_STBD", "position": "Starboard side", "rule": "Rule 31" },
+        { "id": "sidelight-port", "label": "Port sidelight", "colour": "red", "arc": "SIDELIGHT", "arcCentre": "SIDELIGHT_PORT", "position": "Port side", "rule": "Rule 31" },
+        { "id": "sternlight", "label": "Sternlight", "colour": "white", "arc": "STERNLIGHT", "arcCentre": "STERNLIGHT", "position": "At the stern", "rule": "Rule 31" }
+      ],
+      "dayShapes": [],
+      "quizHints": { "keySignature": "Rule 31 is the seaplane exception — it relaxes position and characteristics, not the requirement to show lights.", "commonConfusions": ["wig-craft", "power-under-50m"] }
+    }
+  ]
 }

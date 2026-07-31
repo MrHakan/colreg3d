@@ -343,6 +343,182 @@ export function setAspect(bearingDeg, rangeM) {
   }
 }
 
+/* ── Learn mode: vessel catalogue ──────────────────────────────────────── */
+
+const catalogue = {
+  list: $('#catalogue'),
+  empty: $('#catalogue-empty'),
+  search: $('#catalogue-search'),
+  title: $('#detail-title'),
+  rule: $('#detail-rule'),
+  body: $('#detail-body'),
+  lights: $('#detail-lights')
+};
+
+/**
+ * Renders the Rules 21–31 catalogue and drives the 3D scene from it.
+ * @param {object} data   result of loadColregData()
+ * @param {object} lights result of initLights()
+ */
+function initCatalogue(data, lights) {
+  if (!catalogue.list || !data?.entries?.length) return;
+
+  let filterRule = 'all';
+  let query = '';
+  let selectedId = null;
+
+  const arcLabel = (l) =>
+    typeof l.arc === 'number' ? `${l.arc}°` : `${ARCS[l.arc] ?? '?'}°`;
+
+  function matches(entry) {
+    if (filterRule !== 'all' && String(entry.rule.number) !== filterRule) return false;
+    if (!query) return true;
+    const hay = `${entry.name} ${entry.summary ?? ''} ${entry.category} ${entry.rule.citation}`;
+    return hay.toLowerCase().includes(query);
+  }
+
+  function render() {
+    const visible = data.entries.filter(matches);
+    catalogue.list.replaceChildren();
+
+    if (!visible.length) {
+      const li = document.createElement('li');
+      li.className = 'catalogue__empty';
+      li.textContent = 'No configuration matches that filter.';
+      catalogue.list.append(li);
+      return;
+    }
+
+    for (const entry of visible) {
+      const li = document.createElement('li');
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'catalogue__item';
+      btn.setAttribute('role', 'option');
+      btn.setAttribute('aria-selected', String(entry.id === selectedId));
+      btn.dataset.entryId = entry.id;
+
+      const text = document.createElement('span');
+      const name = document.createElement('span');
+      name.className = 'catalogue__name';
+      name.textContent = entry.name;
+      const meta = document.createElement('span');
+      meta.className = 'catalogue__meta';
+      meta.textContent = `${entry.lights.length} light${entry.lights.length === 1 ? '' : 's'}` +
+        (entry.dayShapes?.length ? ` · ${entry.dayShapes.length} shape${entry.dayShapes.length === 1 ? '' : 's'}` : '');
+      text.append(name, document.createElement('br'), meta);
+
+      const rule = document.createElement('span');
+      rule.className = 'catalogue__rule';
+      rule.textContent = `R${entry.rule.number}`;
+
+      btn.append(text, rule);
+      btn.addEventListener('click', () => select(entry.id));
+      li.append(btn);
+      catalogue.list.append(li);
+    }
+  }
+
+  function select(id) {
+    const entry = data.entries.find((e) => e.id === id);
+    if (!entry) return;
+    selectedId = id;
+
+    $$('.catalogue__item').forEach((el) => {
+      el.setAttribute('aria-selected', String(el.dataset.entryId === id));
+    });
+
+    // Drive the 3D scene.
+    lights?.setConfiguration?.(entry);
+
+    // Detail panel.
+    if (catalogue.title) catalogue.title.textContent = entry.name;
+    if (catalogue.rule) catalogue.rule.textContent = entry.rule.citation;
+
+    const placeholder = catalogue.body?.querySelector('.placeholder');
+    if (placeholder) placeholder.remove();
+
+    let summary = catalogue.body?.querySelector('.detail-summary');
+    if (!summary && catalogue.body) {
+      summary = document.createElement('p');
+      summary.className = 'detail-summary';
+      catalogue.body.prepend(summary);
+    }
+    if (summary) summary.textContent = entry.summary ?? '';
+
+    if (catalogue.lights) {
+      catalogue.lights.hidden = false;
+      catalogue.lights.replaceChildren();
+
+      for (const l of entry.lights) {
+        const row = document.createElement('div');
+        row.className = 'lightlist__row';
+
+        const swatch = document.createElement('span');
+        swatch.className = 'lightlist__swatch';
+        swatch.dataset.colour = l.colour;
+
+        const dt = document.createElement('dt');
+        dt.className = 'lightlist__name';
+        dt.textContent = l.label ?? l.id;
+
+        const dd = document.createElement('dd');
+        dd.className = 'lightlist__arc';
+        dd.textContent = arcLabel(l);
+        dd.title = `${l.position ?? ''} — ${l.rule ?? ''}`;
+
+        row.append(swatch, dt, dd);
+        catalogue.lights.append(row);
+      }
+
+      for (const s of entry.dayShapes ?? []) {
+        const row = document.createElement('div');
+        row.className = 'lightlist__row';
+
+        const swatch = document.createElement('span');
+        swatch.className = 'lightlist__swatch';
+        swatch.dataset.colour = 'shape';
+
+        const dt = document.createElement('dt');
+        dt.className = 'lightlist__name';
+        dt.textContent = `${s.count > 1 ? `${s.count} × ` : ''}${s.shape}` +
+          (s.arrangement ? ` (${s.arrangement})` : '');
+
+        const dd = document.createElement('dd');
+        dd.className = 'lightlist__arc';
+        dd.textContent = s.rule ?? '';
+
+        row.append(swatch, dt, dd);
+        catalogue.lights.append(row);
+      }
+    }
+
+    emit('catalogue:select', { entry });
+  }
+
+  catalogue.search?.addEventListener('input', () => {
+    query = catalogue.search.value.trim().toLowerCase();
+    render();
+  });
+
+  $$('[data-rule-filter]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      filterRule = chip.dataset.ruleFilter;
+      $$('[data-rule-filter]').forEach((c) => {
+        c.setAttribute('aria-pressed', String(c === chip));
+      });
+      render();
+    });
+  });
+
+  catalogue.empty?.remove();
+  render();
+  select(data.entries.find((e) => e.id === 'power-50m-and-over')?.id ?? data.entries[0].id);
+
+  return { select, get selectedId() { return selectedId; } };
+}
+
 /* ── Status bar ────────────────────────────────────────────────────────── */
 
 const stats = {
@@ -528,6 +704,13 @@ async function start() {
 
   boot.progress(78, 'Loading COLREG database…');
   const data = await loadColregData();
+
+  initCatalogue(data, lights);
+
+  if (data?.problems?.length) {
+    toast(`Rule data: ${data.problems.length} validation problem(s) — see console.`,
+      { kind: 'warn', timeout: 9000 });
+  }
 
   boot.progress(88, 'Preparing quiz engine…');
   const quiz = await initQuiz({ bus, data, scene, lights });

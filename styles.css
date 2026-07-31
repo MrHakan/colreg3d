@@ -977,3 +977,18 @@ code {
     --c-text-mute: #9db0c8;
   }
 }
+
+/* Learn-mode detail summary and day-shape swatch (STEP 4) */
+.detail-summary {
+  margin-bottom: var(--s-4);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--c-text-dim);
+}
+.lightlist__swatch[data-colour="shape"] {
+  background: transparent;
+  border: 2px solid var(--c-text-mute);
+  box-shadow: none;
+  transform: rotate(45deg);
+  border-radius: 2px;
+}

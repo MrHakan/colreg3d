@@ -729,13 +729,32 @@ function buildVessel(THREE) {
 export function toSceneConfig(entry) {
   if (!entry) return DEFAULT_CONFIG;
 
+  const F = VESSEL.mast.fore;
+  const M = VESSEL.mast.main;
+
   const named = {
-    'masthead-fwd': [0, VESSEL.mast.fore.y, VESSEL.mast.fore.z],
-    'masthead-aft': [0, VESSEL.mast.main.y, VESSEL.mast.main.z],
+    'masthead-fwd': [0, F.y, F.z],
+    'masthead-aft': [0, M.y, M.z],
     'sidelight-stbd': [VESSEL.beam / 2, 9, 8],
     'sidelight-port': [-VESSEL.beam / 2, 9, 8],
     'sternlight': [0, 7, -VESSEL.loa / 2 + 1],
-    'towing': [0, 9, -VESSEL.loa / 2 + 1]
+    /* Rule 24(a)(iv): the towing light sits in a vertical line ABOVE the
+       sternlight, which is why it gets its own mount rather than sharing. */
+    'towing': [0, 10, -VESSEL.loa / 2 + 1],
+    /* Rule 24(a)(i) / 24(c)(i): two — or three, for a tow over 200 m —
+       masthead lights in a vertical line, on the foremast. */
+    'masthead-vert-1': [0, F.y + 6, F.z],
+    'masthead-vert-2': [0, F.y + 3, F.z],
+    'masthead-vert-3': [0, F.y, F.z],
+    /* Rule 30(a): anchor lights — one in the fore part, one at or near the
+       stern and lower than the forward one. */
+    'anchor-fwd': [0, 13, VESSEL.loa / 2 - 6],
+    'anchor-aft': [0, 8, -VESSEL.loa / 2 + 4],
+    /* Rule 27(d)(i)/(ii): obstruction and safe-pass sides, shown abeam. */
+    'obstruction-upper': [-VESSEL.beam / 2 - 2, 14, 2],
+    'obstruction-lower': [-VESSEL.beam / 2 - 2, 11, 2],
+    'safepass-upper': [VESSEL.beam / 2 + 2, 14, 2],
+    'safepass-lower': [VESSEL.beam / 2 + 2, 11, 2]
   };
 
   let stackIndex = 0;
