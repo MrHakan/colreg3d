@@ -197,6 +197,8 @@ export async function initLights(ctx) {
   /* ── Vessel hull ── */
   const hull = buildVessel(THREE);
   anchor.add(hull.group);
+  // Published so the simulator can tint her for stand-on / give-way.
+  anchor.userData.hullMaterials = hull.materials;
 
   /* ── Mutable light rig ── */
   let rig = [];                 // [{ def, sprite, lamp, sector, materials }]
@@ -518,7 +520,7 @@ function sharedLampGeo(THREE) {
 }
 
 /** Soft radial gradient used by every light sprite. Built once, tinted per light. */
-function makeGlowTexture(THREE) {
+export function makeGlowTexture(THREE) {
   const size = 128;
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
@@ -655,7 +657,7 @@ function buildDayShape(THREE, def, index) {
  * Procedural low-poly vessel: hull, forecastle, superstructure, funnel and
  * two masts. Roughly 3 400 triangles.
  */
-function buildVessel(THREE) {
+export function buildVessel(THREE) {
   const group = new THREE.Group();
   const { loa, beam, freeboard, draft } = VESSEL;
 

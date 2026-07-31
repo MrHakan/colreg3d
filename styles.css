@@ -992,3 +992,12 @@ code {
   transform: rotate(45deg);
   border-radius: 2px;
 }
+
+/* Simulator note text (STEP 6) */
+.field__note {
+  margin-top: calc(var(--s-4) * -1 + var(--s-2));
+  margin-bottom: var(--s-4);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--c-text-mute);
+}

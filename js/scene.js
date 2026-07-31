@@ -39,17 +39,17 @@ export function loadThree() {
 
 /* ── Tunables ──────────────────────────────────────────────────────────── */
 
-const SEA_SIZE = 1600;              // metres across
+const SEA_SIZE = 2400;              // metres across
 const SEA_SEGMENTS = { full: 128, lite: 64 };
-const FOG_NEAR = 120;
-const FOG_FAR = 780;
+const FOG_NEAR = 200;
+const FOG_FAR = 1500;
 
 const CAMERA = {
   fov: 42,
   near: 0.5,
   far: 4000,
   minDistance: 18,
-  maxDistance: 420,
+  maxDistance: 900,
   /* Pitch lock: the eye may never reach or pass the sea surface plane.
      0.46π ≈ 82.8°, leaving a margin so the horizon stays visible. */
   maxPolarAngle: Math.PI * 0.46,
@@ -461,6 +461,23 @@ export async function initScene(ctx) {
     controls.update();
   }
 
+  /**
+   * Frames an arbitrary patch of sea — used by the encounter simulator, which
+   * has to hold two vessels up to 900 m apart in one view.
+   * @param {THREE.Vector3} centre
+   * @param {number} radius eye distance from the centre
+   */
+  function frameArea(centre, radius, bearingDeg = 205, polarDeg = 62) {
+    const phi = THREE.MathUtils.degToRad(clamp(polarDeg, 8, 82));
+    const theta = THREE.MathUtils.degToRad(norm360(bearingDeg));
+    const r = clamp(radius, CAMERA.minDistance, CAMERA.maxDistance);
+
+    const offset = new THREE.Vector3().setFromSphericalCoords(r, phi, theta);
+    controls.target.copy(centre);
+    camera.position.copy(centre).add(offset);
+    controls.update();
+  }
+
   const _local = new THREE.Vector3();
 
   /**
@@ -601,7 +618,7 @@ export async function initScene(ctx) {
     pending: false,
     THREE, renderer, scene, camera, controls,
     vesselAnchor, targetAnchor,
-    onFrame, resetCamera, lookFromBearing, getBearing, getRange,
+    onFrame, resetCamera, lookFromBearing, frameArea, getBearing, getRange,
     setDaylight, setPerf, dispose,
     get fps() { return fps; }
   };

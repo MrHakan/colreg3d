@@ -549,32 +549,6 @@ function updateNetwork() {
 addEventListener('online', updateNetwork);
 addEventListener('offline', updateNetwork);
 
-/* ── Simulator control read-outs (UI only until STEP 6) ────────────────── */
-
-function wireSimSliders() {
-  const pairs = [
-    ['#sim-bearing', '#sim-bearing-out', (v) => `${String(v).padStart(3, '0')}°`, (v) => `${v} degrees`],
-    ['#sim-heading', '#sim-heading-out', (v) => `${String(v).padStart(3, '0')}°`, (v) => `${v} degrees`],
-    ['#sim-range',   '#sim-range-out',   (v) => `${(v / 10).toFixed(1)} NM`,      (v) => `${(v / 10).toFixed(1)} nautical miles`]
-  ];
-
-  for (const [inputSel, outSel, fmt, a11y] of pairs) {
-    const input = $(inputSel);
-    const out = $(outSel);
-    if (!input || !out) continue;
-
-    const sync = () => {
-      const v = Number(input.value);
-      out.textContent = fmt(v);
-      input.setAttribute('aria-valuetext', a11y(v));
-      emit('sim:input', { id: input.id, value: v });
-    };
-
-    input.addEventListener('input', sync);
-    sync();
-  }
-}
-
 /* ── Service worker / PWA lifecycle ────────────────────────────────────── */
 
 async function registerServiceWorker() {
@@ -664,7 +638,6 @@ async function start() {
   setDaylight(prefs.daylight, { silent: true });
   setPerf(prefs.perf, { silent: true });
   buildAspectTicks();
-  wireSimSliders();
   updateNetwork();
 
   boot.progress(30, 'Registering offline cache…');

@@ -365,12 +365,28 @@
             <div class="field">
               <label class="field__label" for="sim-range">
                 Range
-                <output class="field__out" id="sim-range-out">1.5 NM</output>
+                <output class="field__out" id="sim-range-out">400 m</output>
               </label>
               <input class="slider" type="range" id="sim-range"
-                     min="2" max="60" step="1" value="15"
-                     aria-valuetext="1.5 nautical miles">
+                     min="150" max="700" step="10" value="400"
+                     aria-valuetext="400 metres">
             </div>
+
+            <div class="field">
+              <label class="field__label" for="sim-speed">
+                Target speed
+                <output class="field__out" id="sim-speed-out">12 kn</output>
+              </label>
+              <input class="slider" type="range" id="sim-speed"
+                     min="0" max="24" step="1" value="12"
+                     aria-valuetext="12 knots">
+            </div>
+
+            <p class="field__note">
+              Own vessel makes 12 kn on a heading of 000°. Rule 13 turns on
+              whether the other vessel is <em>coming up with</em> you, so her
+              speed matters as much as the geometry.
+            </p>
 
             <h3 class="subhead">Presets</h3>
             <div class="chips" role="group" aria-label="Encounter presets">
@@ -425,6 +441,14 @@
               <div class="kv__row">
                 <dt>Lights you would see</dt>
                 <dd id="sim-visible-lights">—</dd>
+              </div>
+              <div class="kv__row">
+                <dt>Bearing trend</dt>
+                <dd id="sim-bearing-trend">—</dd>
+              </div>
+              <div class="kv__row">
+                <dt>CPA / TCPA</dt>
+                <dd id="sim-cpa">—</dd>
               </div>
             </dl>
 
