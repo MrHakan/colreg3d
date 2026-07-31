@@ -276,33 +276,51 @@ export async function initLights(ctx) {
   /* ── Per-frame visibility ── */
 
   let lastBearing = -999;
+  let highlighted = new Set();
 
-  scene.onFrame(({ bearing }) => {
-    // Nothing moves unless the eye actually moved; orbiting is the only thing
-    // that changes an arc, so this skips the work on a still camera.
-    if (Math.abs(bearing - lastBearing) < 0.05) return;
-    lastBearing = bearing;
+  scene.onFrame(({ bearing, elapsed }) => {
+    // Orbiting is the only thing that changes an arc, so a still camera does
+    // no work here — except when a light is pulsing for quiz feedback.
+    const moved = Math.abs(bearing - lastBearing) >= 0.05;
 
-    for (const item of rig) {
-      const v = visibilityAt(item.def, bearing);
+    if (moved) {
+      lastBearing = bearing;
 
-      item.sprite.material.opacity = v;
-      item.sprite.visible = v > 0.001;
-      // A light near its cut-off dims *and* shrinks; both cues read faster
-      // than opacity alone on a bright bridge display.
-      item.sprite.scale.setScalar(3 + 4 * v);
+      for (const item of rig) {
+        const v = visibilityAt(item.def, bearing);
+        item.visibility = v;
 
-      // Outside its sector the lamp must go genuinely dark, not merely dim:
-      // a red glow visible from astern would teach the wrong thing. The bead
-      // stays just bright enough to show where the fitting is.
-      item.lamp.material.color.copy(item.colour).multiplyScalar(0.07 + 0.93 * v);
+        item.sprite.material.opacity = v;
+        item.sprite.visible = v > 0.001;
+        // A light near its cut-off dims *and* shrinks; both cues read faster
+        // than opacity alone on a bright bridge display.
+        item.baseScale = 3 + 4 * v;
+        item.sprite.scale.setScalar(item.baseScale);
 
-      if (item.sector.visible) {
-        item.sector.material.opacity = (0.10 + 0.22 * v) * (arcsVisible ? 1 : 0);
+        // Outside its sector the lamp must go genuinely dark, not merely dim:
+        // a red glow visible from astern would teach the wrong thing. The bead
+        // stays just bright enough to show where the fitting is.
+        item.lamp.material.color.copy(item.colour).multiplyScalar(0.07 + 0.93 * v);
+
+        if (item.sector.visible) {
+          item.sector.material.opacity = (0.10 + 0.22 * v) * (arcsVisible ? 1 : 0);
+        }
       }
+
+      if (debugVisible) updateDebugRows(bearing);
     }
 
-    if (debugVisible) updateDebugRows(bearing);
+    // Quiz feedback: pulse the light the explanation is talking about.
+    if (highlighted.size) {
+      const pulse = 1 + 0.45 * Math.sin(elapsed * 7);
+      for (const item of rig) {
+        if (!highlighted.has(item.def.id)) continue;
+        const base = item.baseScale ?? 5;
+        item.sprite.scale.setScalar(base * pulse);
+        item.sprite.visible = true;
+        item.sprite.material.opacity = Math.max(item.visibility ?? 1, 0.55);
+      }
+    }
   });
 
   /* ── Debug / arc-verification overlay ── */
@@ -373,12 +391,31 @@ export async function initLights(ctx) {
     for (const s of shapes) s.root.visible = on;
   }
 
+  /**
+   * Pulses the named lights so a quiz explanation can point at exactly the
+   * light it is describing. Pass an empty array to clear.
+   * @param {string[]} ids
+   */
+  function setHighlight(ids) {
+    const next = new Set(ids || []);
+    // Restore anything that is no longer highlighted to its plain state.
+    for (const item of rig) {
+      if (highlighted.has(item.def.id) && !next.has(item.def.id)) {
+        item.sprite.scale.setScalar(item.baseScale ?? 5);
+        item.sprite.material.opacity = item.visibility ?? 1;
+        item.sprite.visible = (item.visibility ?? 1) > 0.001;
+      }
+    }
+    highlighted = next;
+  }
+
   function setDebugVisible(on) {
     debugVisible = on;
     if (on) updateDebugRows(scene.getBearing());
   }
 
   function setConfiguration(entry) {
+    highlighted = new Set();
     build(toSceneConfig(entry));
     setShapesVisible(shapesVisible);
     setArcsVisible(arcsVisible);
@@ -396,7 +433,7 @@ export async function initLights(ctx) {
     get lights() { return rig.map((r) => r.def); },
     visibleLights: (bearing) =>
       rig.filter((r) => visibilityAt(r.def, bearing) > 0.5).map((r) => r.def),
-    setConfiguration, setArcsVisible, setShapesVisible, setDebugVisible,
+    setConfiguration, setArcsVisible, setShapesVisible, setDebugVisible, setHighlight,
     dispose() { clearRig(); glowTexture.dispose(); disposables.forEach((d) => d.dispose?.()); }
   };
 }
